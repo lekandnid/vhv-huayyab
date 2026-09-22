@@ -1,87 +1,87 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบดูแลลูกบ้าน อสม. ห้วยยาบ</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <style>
-    :root { --primary:#0066cc; --primary-hover:#005bb5; --secondary:#f4f7f6; --danger:#dc3545; --warning:#ffc107; --success:#28a745; --text-main:#333; --text-muted:#6c757d; --border-color:#dee2e6; --bg-white:#fff; --fs:15px; }
-    body { font-family:'Sarabun',sans-serif; background:var(--secondary); color:var(--text-main); margin:0; padding:15px; font-size:var(--fs); }
-    body.fs-large { --fs:18px; } body.fs-xlarge { --fs:21px; }
-    .container { max-width:1100px; margin:0 auto; }
-    h2,h3,h4 { color:var(--primary); margin-top:0; }
-    .hidden { display:none !important; }
-    .form-group { margin-bottom:15px; }
-    .form-row { display:flex; gap:15px; flex-wrap:wrap; }
-    .form-row .form-group { flex:1; min-width:150px; }
-    label { display:block; margin-bottom:6px; font-weight:600; font-size:.95em; }
-    input,select,textarea { width:100%; padding:10px; background:var(--bg-white); color:var(--text-main); border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; font-family:'Sarabun'; font-size:1em; transition:border-color .2s; }
-    input:focus,select:focus,textarea:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(0,102,204,.15); }
-    input[readonly] { background:#e9ecef; color:#495057; }
-    button { background:var(--primary); color:#fff; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:.95em; font-weight:600; transition:.2s; white-space:nowrap; font-family:'Sarabun'; }
-    button:hover { background:var(--primary-hover); box-shadow:0 2px 5px rgba(0,0,0,.2); }
-    .btn-danger { background:var(--danger); } .btn-danger:hover { background:#c82333; }
-    .btn-warn { background:var(--warning); color:#212529; } .btn-warn:hover { background:#e0a800; }
-    .btn-outline { background:transparent; border:1px solid var(--border-color); color:var(--text-muted); }
-    .btn-outline:hover { background:#f8f9fa; color:var(--text-main); }
-    .btn-small { padding:6px 10px; font-size:.88em; margin-right:3px; }
-    .btn-call { background:#0d6efd; color:#fff; text-decoration:none; display:inline-block; padding:8px 14px; border-radius:6px; font-weight:600; font-size:.9em; }
-    .btn-emergency { background:#dc3545; color:#fff; text-decoration:none; display:inline-block; padding:8px 14px; border-radius:6px; font-weight:600; font-size:.9em; }
-    .btn-hosp { background:#198754; color:#fff; text-decoration:none; display:inline-block; padding:8px 14px; border-radius:6px; font-weight:600; font-size:.9em; }
-    .header-bar { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-color); padding-bottom:15px; margin-bottom:20px; gap:10px; flex-wrap:wrap; }
-    .white-panel { background:var(--bg-white); border:1px solid var(--border-color); padding:20px; border-radius:10px; margin-bottom:25px; box-shadow:0 4px 6px rgba(0,0,0,.04); }
-    .dashboard-cards { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
-    .stat-card { flex:1; min-width:120px; padding:20px 15px; border-radius:10px; text-align:center; background:var(--bg-white); box-shadow:0 2px 8px rgba(0,0,0,.05); border-bottom:4px solid #ccc; }
-    .stat-card h2 { margin:0; font-size:2.1em; color:var(--text-main); }
-    .stat-card p { margin:5px 0 0; font-size:.9em; font-weight:600; color:var(--text-muted); }
-    .card-blue { border-bottom-color:var(--primary); } .card-blue h2 { color:var(--primary); }
-    .card-red { border-bottom-color:var(--danger); } .card-red h2 { color:var(--danger); }
-    .card-yellow { border-bottom-color:var(--warning); } .card-yellow h2 { color:#d39e00; }
-    .card-green { border-bottom-color:var(--success); } .card-green h2 { color:var(--success); }
-    .card-purple { border-bottom-color:#6f42c1; } .card-purple h2 { color:#6f42c1; }
-    .table-responsive { overflow-x:auto; margin-top:10px; }
-    table { width:100%; border-collapse:collapse; font-size:.93em; }
-    th,td { border:1px solid var(--border-color); padding:12px 10px; text-align:left; vertical-align:top; }
-    th { background:#f8f9fa; white-space:nowrap; font-weight:600; }
-    tr:nth-child(even) { background:#fcfcfc; }
-    .badge-head { font-size:11px; background:#e7f1ff; color:#0c63e4; border:1px solid #b6d4fe; padding:2px 8px; border-radius:12px; margin-left:5px; white-space:nowrap; }
-    .badge-ok { font-size:12px; background:#e8f5e9; color:#155724; border:1px solid #c3e6cb; padding:2px 8px; border-radius:12px; }
-    .badge-bad { font-size:12px; background:#fdecea; color:#a71d2a; border:1px solid #f5c6cb; padding:2px 8px; border-radius:12px; font-weight:bold; }
-    .search-box { width:100%; padding:12px; border:2px solid var(--primary); background:var(--bg-white); border-radius:8px; margin-bottom:15px; font-size:1em; }
-    .admin-tabs { display:flex; gap:5px; margin-bottom:-1px; flex-wrap:wrap; }
-    .admin-tabs button { padding:12px 18px; font-size:.95em; border-radius:8px 8px 0 0; background:#e9ecef; border:1px solid var(--border-color); border-bottom:none; color:var(--text-muted); font-weight:bold; }
-    .admin-tabs button.active-tab { background:var(--bg-white); color:var(--primary); border-top:3px solid var(--primary); z-index:1; position:relative; }
-    #loader { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,.9); display:flex; justify-content:center; align-items:center; z-index:1000; flex-direction:column; }
-    .spinner { border:4px solid #f3f3f3; border-top:4px solid var(--primary); border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite; }
-    @keyframes spin { 100% { transform:rotate(360deg); } }
-    #toast-wrap { position:fixed; top:15px; left:50%; transform:translateX(-50%); z-index:2000; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
-    .toast { background:#212529; color:#fff; padding:12px 20px; border-radius:8px; font-weight:600; box-shadow:0 6px 18px rgba(0,0,0,.25); max-width:90vw; animation:fadeInDown .25s ease; }
-    .toast.ok { background:#198754; } .toast.warn { background:#b38b00; } .toast.err { background:#dc3545; }
-    @keyframes fadeInDown { from{opacity:0; transform:translateY(-12px);} to{opacity:1; transform:translateY(0);} }
-    .toolbar-chip { font-size:13px; padding:6px 12px; border-radius:20px; font-weight:700; background:#e8f5e9; color:#155724; white-space:nowrap; }
-    .fs-group { display:inline-flex; gap:3px; }
-    .fs-group button { padding:5px 10px; font-size:13px; background:#e9ecef; color:#333; font-weight:700; }
-    .fs-group button.active { background:var(--primary); color:#fff; }
-    #triage-suggest { border-radius:8px; padding:12px 15px; margin-bottom:15px; font-size:.95em; border:1px solid #eee; background:#f8f9fa; }
-    #triage-suggest.red { background:#fff5f5; border-color:#f5c6cb; color:#a71d2a; }
-    #triage-suggest.yellow { background:#fffdf0; border-color:#ffe8a1; color:#8a6d00; }
-    #triage-suggest.green { background:#e8f5e9; border-color:#c3e6cb; color:#155724; }
-    .larva-input { max-width:110px; text-align:center; }
-    .house-card { border:1px solid var(--border-color); border-radius:10px; margin-bottom:14px; overflow:hidden; background:#fff; }
-    .house-card-head { background:#f0f7ff; padding:12px 15px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
-    .house-card-body { padding:10px 15px; }
-    .member-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed #eee; flex-wrap:wrap; }
-    .member-row:last-child { border-bottom:none; }
-    .summary-box { border-radius:10px; padding:15px; text-align:center; flex:1; min-width:130px; border:1px solid #eee; background:#fff; }
-    .summary-box h2 { margin:0; font-size:1.9em; }
-    .summary-box p { margin:4px 0 0; font-size:.85em; color:var(--text-muted); font-weight:600; }
-    .cid-cell { font-family:monospace; font-size:15px; white-space:nowrap; }
-    .cid-eye { padding:2px 8px !important; margin-left:4px; font-size:15px; }
-    @media print { body * { visibility:hidden !important; } #report-print, #report-print * { visibility:visible !important; } #report-print { display:block !important; position:absolute; left:0; top:0; width:100%; border:none; box-shadow:none; padding:0; } .no-print { display:none !important; } }
-    @media (max-width:600px) { .header-bar { flex-direction:column; align-items:flex-start; } .stat-card h2 { font-size:1.7em; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<title>ระบบดูแลลูกบ้าน อสม. ห้วยยาบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root { --primary:#0066cc; --primary-hover:#005bb5; --secondary:#f4f7f6; --danger:#dc3545; --warning:#ffc107; --success:#28a745; --text-main:#333; --text-muted:#6c757d; --border-color:#dee2e6; --bg-white:#fff; --fs:15px; }
+  body { font-family:'Sarabun',sans-serif; background:var(--secondary); color:var(--text-main); margin:0; padding:15px; font-size:var(--fs); }
+  body.fs-large { --fs:18px; } body.fs-xlarge { --fs:21px; }
+  .container { max-width:1100px; margin:0 auto; }
+  h2,h3,h4 { color:var(--primary); margin-top:0; }
+  .hidden { display:none !important; }
+  .form-group { margin-bottom:15px; }
+  .form-row { display:flex; gap:15px; flex-wrap:wrap; }
+  .form-row .form-group { flex:1; min-width:150px; }
+  label { display:block; margin-bottom:6px; font-weight:600; font-size:.95em; }
+  input,select,textarea { width:100%; padding:12px; background:var(--bg-white); color:var(--text-main); border:1px solid var(--border-color); border-radius:6px; box-sizing:border-box; font-family:'Sarabun'; font-size:16px; transition:border-color .2s; -webkit-appearance:none; }
+  input:focus,select:focus,textarea:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(0,102,204,.15); }
+  input[readonly] { background:#e9ecef; color:#495057; }
+  button { background:var(--primary); color:#fff; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:.95em; font-weight:600; transition:.2s; white-space:nowrap; font-family:'Sarabun'; }
+  button:hover { background:var(--primary-hover); box-shadow:0 2px 5px rgba(0,0,0,.2); }
+  .btn-danger { background:var(--danger); } .btn-danger:hover { background:#c82333; }
+  .btn-warn { background:var(--warning); color:#212529; } .btn-warn:hover { background:#e0a800; }
+  .btn-outline { background:transparent; border:1px solid var(--border-color); color:var(--text-muted); }
+  .btn-outline:hover { background:#f8f9fa; color:var(--text-main); }
+  .btn-small { padding:6px 10px; font-size:.88em; margin-right:3px; }
+  .btn-call { background:#0d6efd; color:#fff; text-decoration:none; display:inline-block; padding:8px 14px; border-radius:6px; font-weight:600; font-size:.9em; }
+  .btn-emergency { background:#dc3545; color:#fff; text-decoration:none; display:inline-block; padding:8px 14px; border-radius:6px; font-weight:600; font-size:.9em; }
+  .btn-hosp { background:#198754; color:#fff; text-decoration:none; display:inline-block; padding:8px 14px; border-radius:6px; font-weight:600; font-size:.9em; }
+  .header-bar { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-color); padding-bottom:15px; margin-bottom:20px; gap:10px; flex-wrap:wrap; }
+  .white-panel { background:var(--bg-white); border:1px solid var(--border-color); padding:20px; border-radius:10px; margin-bottom:25px; box-shadow:0 4px 6px rgba(0,0,0,.04); }
+  .dashboard-cards { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
+  .stat-card { flex:1; min-width:120px; padding:20px 15px; border-radius:10px; text-align:center; background:var(--bg-white); box-shadow:0 2px 8px rgba(0,0,0,.05); border-bottom:4px solid #ccc; }
+  .stat-card h2 { margin:0; font-size:2.1em; color:var(--text-main); }
+  .stat-card p { margin:5px 0 0; font-size:.9em; font-weight:600; color:var(--text-muted); }
+  .card-blue { border-bottom-color:var(--primary); } .card-blue h2 { color:var(--primary); }
+  .card-red { border-bottom-color:var(--danger); } .card-red h2 { color:var(--danger); }
+  .card-yellow { border-bottom-color:var(--warning); } .card-yellow h2 { color:#d39e00; }
+  .card-green { border-bottom-color:var(--success); } .card-green h2 { color:var(--success); }
+  .card-purple { border-bottom-color:#6f42c1; } .card-purple h2 { color:#6f42c1; }
+  .table-responsive { overflow-x:auto; margin-top:10px; }
+  table { width:100%; border-collapse:collapse; font-size:.93em; }
+  th,td { border:1px solid var(--border-color); padding:12px 10px; text-align:left; vertical-align:top; }
+  th { background:#f8f9fa; white-space:nowrap; font-weight:600; }
+  tr:nth-child(even) { background:#fcfcfc; }
+  .badge-head { font-size:11px; background:#e7f1ff; color:#0c63e4; border:1px solid #b6d4fe; padding:2px 8px; border-radius:12px; margin-left:5px; white-space:nowrap; }
+  .badge-ok { font-size:12px; background:#e8f5e9; color:#155724; border:1px solid #c3e6cb; padding:2px 8px; border-radius:12px; }
+  .badge-bad { font-size:12px; background:#fdecea; color:#a71d2a; border:1px solid #f5c6cb; padding:2px 8px; border-radius:12px; font-weight:bold; }
+  .search-box { width:100%; padding:12px; border:2px solid var(--primary); background:var(--bg-white); border-radius:8px; margin-bottom:15px; font-size:1em; }
+  .admin-tabs { display:flex; gap:5px; margin-bottom:-1px; flex-wrap:wrap; }
+  .admin-tabs button { padding:12px 18px; font-size:.95em; border-radius:8px 8px 0 0; background:#e9ecef; border:1px solid var(--border-color); border-bottom:none; color:var(--text-muted); font-weight:bold; }
+  .admin-tabs button.active-tab { background:var(--bg-white); color:var(--primary); border-top:3px solid var(--primary); z-index:1; position:relative; }
+  #loader { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,.9); display:flex; justify-content:center; align-items:center; z-index:1000; flex-direction:column; }
+  .spinner { border:4px solid #f3f3f3; border-top:4px solid var(--primary); border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite; }
+  @keyframes spin { 100% { transform:rotate(360deg); } }
+  #toast-wrap { position:fixed; top:15px; left:50%; transform:translateX(-50%); z-index:2000; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+  .toast { background:#212529; color:#fff; padding:12px 20px; border-radius:8px; font-weight:600; box-shadow:0 6px 18px rgba(0,0,0,.25); max-width:90vw; animation:fadeInDown .25s ease; }
+  .toast.ok { background:#198754; } .toast.warn { background:#b38b00; } .toast.err { background:#dc3545; }
+  @keyframes fadeInDown { from{opacity:0; transform:translateY(-12px);} to{opacity:1; transform:translateY(0);} }
+  .toolbar-chip { font-size:13px; padding:6px 12px; border-radius:20px; font-weight:700; background:#e8f5e9; color:#155724; white-space:nowrap; }
+  .fs-group { display:inline-flex; gap:3px; }
+  .fs-group button { padding:5px 10px; font-size:13px; background:#e9ecef; color:#333; font-weight:700; }
+  .fs-group button.active { background:var(--primary); color:#fff; }
+  #triage-suggest { border-radius:8px; padding:12px 15px; margin-bottom:15px; font-size:.95em; border:1px solid #eee; background:#f8f9fa; }
+  #triage-suggest.red { background:#fff5f5; border-color:#f5c6cb; color:#a71d2a; }
+  #triage-suggest.yellow { background:#fffdf0; border-color:#ffe8a1; color:#8a6d00; }
+  #triage-suggest.green { background:#e8f5e9; border-color:#c3e6cb; color:#155724; }
+  .larva-input { max-width:110px; text-align:center; }
+  .house-card { border:1px solid var(--border-color); border-radius:10px; margin-bottom:14px; overflow:hidden; background:#fff; }
+  .house-card-head { background:#f0f7ff; padding:12px 15px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  .house-card-body { padding:10px 15px; }
+  .member-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed #eee; flex-wrap:wrap; }
+  .member-row:last-child { border-bottom:none; }
+  .summary-box { border-radius:10px; padding:15px; text-align:center; flex:1; min-width:130px; border:1px solid #eee; background:#fff; }
+  .summary-box h2 { margin:0; font-size:1.9em; }
+  .summary-box p { margin:4px 0 0; font-size:.85em; color:var(--text-muted); font-weight:600; }
+  .cid-cell { font-family:monospace; font-size:15px; white-space:nowrap; }
+  .cid-eye { padding:2px 8px !important; margin-left:4px; font-size:15px; }
+  @media print { body * { visibility:hidden !important; } #report-print, #report-print * { visibility:visible !important; } #report-print { display:block !important; position:absolute; left:0; top:0; width:100%; border:none; box-shadow:none; padding:0; } .no-print { display:none !important; } }
+  @media (max-width:600px) { .header-bar { flex-direction:column; align-items:flex-start; } .stat-card h2 { font-size:1.7em; } }
+</style>
 </head>
 <body>
 
@@ -126,7 +126,7 @@
       </div>
     </div>
 
-    <!-- ============ ADMIN VIEW ============ -->
+    <!-- ADMIN VIEW -->
     <div id="admin-view" class="hidden">
       <div class="admin-tabs">
         <button type="button" id="tab-btn-doc" class="active-tab" onclick="switchAdminTab('doc')">🩺 สรุปสุขภาพ</button>
@@ -248,7 +248,7 @@
       </div>
     </div>
 
-    <!-- ============ VHV VIEW ============ -->
+    <!-- VHV VIEW -->
     <div id="vhv-view" class="hidden">
       <div class="admin-tabs">
         <button type="button" id="tab-btn-vtask" class="active-tab" onclick="switchVHVTab('vtask')">📋 ภารกิจ & ทะเบียน</button>
@@ -284,8 +284,8 @@
             <div class="form-group"><label>เบอร์โทร</label><input type="tel" id="res-phone" placeholder="08xxxxxxxx"></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>บ้านเลขที่ *</label><input type="text" id="res-house" required onblur="autoFillCoords()"></div>
-            <div class="form-group"><label>หมู่ที่ *</label><input type="text" inputmode="numeric" id="res-moo" required onblur="autoFillCoords()"></div>
+            <div class="form-group"><label>บ้านเลขที่ *</label><input type="text" id="res-house" required oninput="tryAutoFillCoords()" onblur="tryAutoFillCoords()"></div>
+            <div class="form-group"><label>หมู่ที่ *</label><input type="text" inputmode="numeric" id="res-moo" required oninput="tryAutoFillCoords()" onblur="tryAutoFillCoords()"></div>
             <div class="form-group"><label>สถานะในบ้าน *</label><select id="res-role" required><option value="เจ้าบ้าน">เจ้าบ้าน</option><option value="ผู้อาศัย" selected>ผู้อาศัย</option></select></div>
           </div>
           <div class="form-row">
@@ -299,10 +299,13 @@
           <div class="form-row">
             <div class="form-group">
               <label>พิกัด GPS บ้าน</label>
-              <div style="display:flex; gap:8px;">
-                <input type="text" id="res-coords" placeholder="ละติจูด, ลองจิจูด" readonly>
-                <button type="button" class="btn-warn" onclick="getLocation()" style="white-space:nowrap;">📍 ดึงพิกัด</button>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="text" id="res-coords" placeholder="พิกัดจะถูกกรอกอัตโนมัติเมื่อมีบ้านเดียวกัน" readonly style="flex:1; min-width:200px;">
+                <button type="button" class="btn-warn" onclick="getLocation()" style="white-space:nowrap;">📍 ดึงพิกัดใหม่</button>
+                <button type="button" class="btn-outline" onclick="openHousePicker()" style="white-space:nowrap;">🏠 เลือกบ้านเดิม</button>
+                <button type="button" class="btn-outline" onclick="clearCoords()" style="white-space:nowrap;">🗑️ ล้างพิกัด</button>
               </div>
+              <small id="coords-hint" style="color:var(--text-muted); font-size:13px; display:block; margin-top:6px;"></small>
             </div>
           </div>
           <div style="margin-top:15px; padding-top:15px; border-top:1px solid #eee;">
@@ -496,7 +499,7 @@
 
 <script>
   /* ============================================================
-   *  🔧 ใส่ URL ของ Google Apps Script ที่นี่ (ลงท้าย /exec)
+   *  🔧 ใส่ URL ของ Google Apps Script (ลงท้าย /exec)
    * ============================================================ */
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwJd3715GtUk292WYvckf0BDY5xIt4107lRrN6ZTzsYEnui-9MIH7Uf_FQ2zRDoelJm/exec";
   /* ============================================================ */
@@ -578,6 +581,49 @@
   function esc(s) { if (s === null || s === undefined) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function maskCitizenId(cid) { const s = String(cid || '').trim(); if (!s) return '-'; if (s.length <= 4) return s; return '•'.repeat(s.length - 4) + s.slice(-4); }
 
+  /* ========== 🔧 แปลงวันเกิดจากหลายรูปแบบ ========== */
+  function parseDobToParts(dobStr) {
+    if (!dobStr) return null;
+    const s = String(dobStr).trim();
+    // 1) DD/MM/YYYY
+    if (s.includes('/')) {
+      const p = s.split('/');
+      if (p.length === 3) return { day: String(p[0]).padStart(2,'0'), month: String(p[1]).padStart(2,'0'), year: String(p[2]) };
+    }
+    // 2) ISO YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      const p = s.split('T')[0].split('-');
+      const y = parseInt(p[0]);
+      return { day: p[2], month: p[1], year: String(y > 2400 ? y : y + 543) };
+    }
+    // 3) "Sat Mar 15 2500 ..." (Google Sheets Date)
+    const m = s.match(/(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+    if (m) {
+      const monthMap = { Jan:'01', Feb:'02', Mar:'03', Apr:'04', May:'05', Jun:'06', Jul:'07', Aug:'08', Sep:'09', Oct:'10', Nov:'11', Dec:'12' };
+      const y = parseInt(m[3]);
+      return { day: String(m[2]).padStart(2,'0'), month: monthMap[m[1]] || '01', year: String(y > 2400 ? y : y + 543) };
+    }
+    return null;
+  }
+
+  /* ========== fetch with timeout ========== */
+  function fetchWithTimeout(url, options, timeoutMs) {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs || 15000))
+    ]);
+  }
+  function getSafariHelpMessage() {
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/.test(ua);
+    const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+    if (isIOS && isSafari) {
+      return '\n\n🍎 วิธีแก้บน iPhone:\n1. ตั้งค่า → Safari\n2. ปิด "ป้องกันการติดตามข้ามเว็บไซต์"\n3. ปิด "บล็อกคุกกี้ทั้งหมด"\n4. ปิด Safari แล้วเปิดใหม่';
+    }
+    if (isIOS) return '\n\n🍎 ลองใช้ Safari หรือเพิ่มหน้าเว็บไปที่หน้าจอโฮม';
+    return '';
+  }
+
   /* ========== Offline queue ========== */
   function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch (e) { return []; } }
   function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateSyncBadge(); }
@@ -597,7 +643,7 @@
     showLoader();
     const remain = [];
     for (const item of q) {
-      try { const r = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(item.data) }); const res = await r.json(); if (res.status !== 'success') remain.push(item); }
+      try { const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(item.data) }, 15000); const res = await r.json(); if (res.status !== 'success') remain.push(item); }
       catch (e) { remain.push(item); break; }
     }
     setQueue(remain); hideLoader();
@@ -628,7 +674,7 @@
     }
 
     showLoader();
-    fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'get_data' }) })
+    fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'get_data' }) }, 15000)
       .then(r => r.json())
       .then(res => {
         hideLoader();
@@ -659,7 +705,7 @@
     if (currentUser && !data._actor) data._actor = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
     if (!navigator.onLine) { enqueue(data); if (callback) callback(data); toast('📶 ออฟไลน์: บันทึกไว้ในเครื่อง', 'warn'); return; }
     showLoader();
-    fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) })
+    fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) }, 15000)
       .then(r => r.json())
       .then(res => {
         hideLoader();
@@ -732,20 +778,13 @@
       loginSuccess('admin', 'คุณหมอ (Admin)');
       if (r.is_default) setTimeout(() => toast('⚠️ ยังใช้รหัสเริ่มต้น — ควรเปลี่ยนทันที', 'warn'), 600);
     } else if (role === 'vhv') {
-      if (dbVHV.length === 0) {
-        return alert('❌ ยังไม่มีข้อมูล อสม. ในระบบ\n\nกรุณา login เป็น admin ก่อน\nแล้วไปที่ "👥 จัดการ อสม." เพื่อเพิ่ม อสม. คนแรก');
-      }
+      if (!navigator.onLine) return alert('📶 กรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเข้าสู่ระบบ' + getSafariHelpMessage());
+      if (dbVHV.length === 0) return alert('❌ ยังไม่มีข้อมูล อสม. ในระบบ\n\nกรุณา login เป็น admin ก่อน\nแล้วไปที่ "👥 จัดการ อสม." เพื่อเพิ่ม อสม. คนแรก');
       const byId = dbVHV.filter(u => String(u.vhv_id).trim() === String(id).trim());
-      if (byId.length === 0) {
-        const ids = dbVHV.map(u => u.vhv_id).join(', ');
-        return alert(`❌ ไม่พบรหัส อสม. "${id}"\n\nรหัสที่มีในระบบ: ${ids}`);
-      }
+      if (byId.length === 0) { const ids = dbVHV.map(u => u.vhv_id).join(', '); return alert(`❌ ไม่พบรหัส อสม. "${id}"\n\nรหัสที่มีในระบบ: ${ids}`); }
       const user = byId.find(u => String(u.pass).trim() === String(pass).trim());
       if (user) loginSuccess('vhv', user.name, user.vhv_id);
-      else {
-        const cp = byId[0].pass;
-        alert(`❌ รหัสผ่านไม่ถูกต้อง\n\nกรอก: "${pass}" (${pass.length} ตัว)\nในระบบ: "${cp}" (${cp.length} ตัว)`);
-      }
+      else { const cp = byId[0].pass; alert(`❌ รหัสผ่านไม่ถูกต้อง\n\nกรอก: "${pass}" (${pass.length} ตัว)\nในระบบ: "${cp}" (${cp.length} ตัว)`); }
     } else alert('ข้อมูลไม่ถูกต้อง');
   }
 
@@ -753,12 +792,16 @@
     if (!navigator.onLine) return { success: false, message: '📶 ต้องต่ออินเทอร์เน็ตเพื่อเข้าสู่ระบบผู้ดูแล' };
     try {
       showLoader();
-      const r = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'verify_admin', pass: pass }) });
+      const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'verify_admin', pass: pass }) }, 15000);
       const data = await r.json();
       hideLoader();
       if (data.status === 'success') return { success: true, is_default: !!data.is_default };
       return { success: false, message: data.message || 'รหัสผ่านไม่ถูกต้อง' };
-    } catch (e) { hideLoader(); return { success: false, message: 'การเชื่อมต่อล้มเหลว ลองใหม่' }; }
+    } catch (e) {
+      hideLoader(); console.error('Login error:', e);
+      if (e.message === 'TIMEOUT') return { success: false, message: '⏱️ การเชื่อมต่อใช้เวลานานเกิน 15 วินาที กรุณาลองใหม่' + getSafariHelpMessage() };
+      return { success: false, message: 'การเชื่อมต่อล้มเหลว: ' + (e.message || 'ไม่ทราบสาเหตุ') + getSafariHelpMessage() };
+    }
   }
 
   function loginSuccess(role, name, vhv_id) {
@@ -819,10 +862,10 @@
     if (currentUser.role === 'admin') {
       if (!navigator.onLine) { errBox.textContent = 'ต้องต่ออินเทอร์เน็ต'; return; }
       showLoader();
-      fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({
+      fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({
         action: 'change_admin_password', old_pass: currentPass, new_pass: newPass,
         requested_by: currentUser.id || 'admin', requested_name: currentUser.name || 'Admin'
-      })})
+      })}, 15000)
       .then(r => r.json())
       .then(data => {
         hideLoader();
@@ -880,10 +923,10 @@
     if (!navigator.onLine) { toast('📶 ต้องออนไลน์เพื่อดูเลขบัตรเต็ม', 'warn'); return null; }
     try {
       showLoader();
-      const r = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({
+      const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({
         action: 'reveal_cid', citizen_id: citizenId,
         requested_by: currentUser ? currentUser.id : '', requested_name: currentUser ? currentUser.name : '', role: currentUser ? currentUser.role : ''
-      })});
+      })}, 15000);
       const data = await r.json(); hideLoader();
       if (data.status === 'success' && data.citizen_id_full) { cidRevealCache[citizenId] = data.citizen_id_full; return data.citizen_id_full; }
       toast('ดึงเลขบัตรไม่สำเร็จ: ' + (data.message || ''), 'err'); return null;
@@ -1157,18 +1200,145 @@
     f.value = 'กำลังค้นหา...';
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        p => { f.value = `${p.coords.latitude}, ${p.coords.longitude}`; },
-        e => { f.value = ''; if (e.code === 1) alert('ไม่อนุญาต GPS'); else if (e.code === 2) alert('สัญญาณ GPS ขัดข้อง'); else if (e.code === 3) alert('หมดเวลา'); else alert('ผิดพลาด: ' + e.message); },
+        p => {
+          f.value = `${p.coords.latitude}, ${p.coords.longitude}`;
+          f.dataset.forHouse = `${document.getElementById('res-moo').value.trim()}|${document.getElementById('res-house').value.trim()}`;
+          const hint = document.getElementById('coords-hint');
+          if (hint) { hint.innerHTML = '📍 บันทึกพิกัดใหม่แล้ว — บ้านอื่นที่อยู่เดียวกันจะใช้พิกัดนี้อัตโนมัติ'; hint.style.color = 'var(--success)'; }
+          toast('📍 ดึงพิกัดสำเร็จ', 'ok');
+        },
+        e => {
+          f.value = '';
+          if (e.code === 1) alert('ไม่อนุญาต GPS');
+          else if (e.code === 2) alert('สัญญาณ GPS ขัดข้อง');
+          else if (e.code === 3) alert('หมดเวลา');
+          else alert('ผิดพลาด: ' + e.message);
+        },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     } else { f.value = ''; alert('เบราว์เซอร์ไม่รองรับ GPS'); }
   }
-  function autoFillCoords() {
-    const h = document.getElementById('res-house').value.trim(), m = document.getElementById('res-moo').value.trim();
-    const c = document.getElementById('res-coords');
-    if (h !== '' && m !== '' && c.value === '') { const match = dbResidents.find(r => r.house_no === h && r.moo === m && r.coords && r.coords.trim() !== ''); if (match) c.value = match.coords; }
+
+  /* ========== 📍 พิกัดบ้านเดียวกัน ========== */
+  let _coordsTimer = null;
+
+  function findCoordsOfHouse(houseNo, mooNo) {
+    const h = String(houseNo || '').trim();
+    const m = String(mooNo || '').trim();
+    if (!h || !m) return null;
+    const match = dbResidents.find(r =>
+      String(r.house_no || '').trim() === h &&
+      String(r.moo || '').trim() === m &&
+      r.coords && String(r.coords).trim() !== ''
+    );
+    return match ? { coords: match.coords, name: match.name || '' } : null;
   }
-  function clearResForm() { document.getElementById('resident-form').reset(); const i = document.getElementById('res-citizen-id'); i.readOnly = false; delete i.dataset.realCid; }
+
+  function tryAutoFillCoords() {
+    clearTimeout(_coordsTimer);
+    _coordsTimer = setTimeout(() => {
+      const hEl = document.getElementById('res-house');
+      const mEl = document.getElementById('res-moo');
+      const cEl = document.getElementById('res-coords');
+      const hint = document.getElementById('coords-hint');
+      if (!hEl || !mEl || !cEl) return;
+
+      const h = hEl.value.trim();
+      const m = mEl.value.trim();
+
+      if (cEl.dataset.forHouse && cEl.dataset.forHouse !== `${m}|${h}`) {
+        cEl.value = '';
+        delete cEl.dataset.forHouse;
+        if (hint) hint.textContent = '';
+      }
+
+      if (!h || !m) return;
+      if (cEl.value && !cEl.dataset.forHouse) return;
+
+      const found = findCoordsOfHouse(h, m);
+      if (found) {
+        cEl.value = found.coords;
+        cEl.dataset.forHouse = `${m}|${h}`;
+        if (hint) {
+          hint.innerHTML = `✅ ดึงพิกัดจากบ้านเลขที่ <b>${esc(h)}</b> หมู่ <b>${esc(m)}</b> อัตโนมัติ (สมาชิกคนแรก: ${esc(found.name)})`;
+          hint.style.color = 'var(--success)';
+        }
+        toast(`📍 ใช้พิกัดบ้านเลขที่ ${h} หมู่ ${m} เดิม`, 'ok');
+      } else {
+        if (hint) {
+          hint.innerHTML = `💡 ยังไม่มีพิกัดของบ้านนี้ — กด <b>"📍 ดึงพิกัดใหม่"</b> เพื่อบันทึกพิกัด`;
+          hint.style.color = 'var(--text-muted)';
+        }
+      }
+    }, 400);
+  }
+
+  function openHousePicker() {
+    const myRes = dbResidents.filter(r => r.owner === currentUser.id);
+    const houseMap = {};
+    myRes.forEach(r => {
+      const k = `${r.moo}|${r.house_no}`;
+      if (r.coords && String(r.coords).trim() !== '') {
+        if (!houseMap[k]) houseMap[k] = { moo: r.moo, house: r.house_no, coords: r.coords, members: [] };
+        houseMap[k].members.push(r.name);
+      }
+    });
+    const keys = Object.keys(houseMap).sort((a, b) => {
+      const [am, ah] = a.split('|'), [bm, bh] = b.split('|');
+      return cmpNum(am, bm) || cmpNum(ah, bh);
+    });
+    if (keys.length === 0) {
+      return alert('❌ ยังไม่มีบ้านที่มีพิกัดในระบบ\n\nกรุณากรอกบ้านเลขที่ + หมู่ แล้วกด "📍 ดึงพิกัดใหม่" ครั้งแรกก่อน');
+    }
+    let listHtml = keys.map(k => {
+      const h = houseMap[k];
+      return `<div style="padding:12px 16px; border:1px solid var(--border-color); border-radius:8px; margin-bottom:8px; cursor:pointer; transition:0.15s;"
+        onmouseover="this.style.background='#f0f7ff';this.style.borderColor='var(--primary)'"
+        onmouseout="this.style.background='';this.style.borderColor='var(--border-color)'"
+        onclick="selectHouseFromPicker('${esc(k)}')">
+        <strong style="color:var(--primary); font-size:16px;">🏠 บ้านเลขที่ ${esc(h.house)} หมู่ ${esc(h.moo)}</strong>
+        <br><small style="color:var(--text-muted);">${esc(h.coords)}</small>
+        <br><small style="color:var(--text-main);">สมาชิก: ${esc(h.members.join(', '))}</small>
+      </div>`;
+    }).join('');
+    const html = `
+      <div id="house-picker-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; display:flex; justify-content:center; align-items:flex-start; padding-top:60px; overflow-y:auto;" onclick="if(event.target===this) closeHousePicker()">
+        <div style="width:95%; max-width:560px; background:#fff; border-radius:12px; padding:24px; margin-bottom:40px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--primary); padding-bottom:12px; margin-bottom:16px;">
+            <h3 style="margin:0; color:var(--primary);">🏠 เลือกบ้านเดิม (ที่มีพิกัดแล้ว)</h3>
+            <button type="button" class="btn-danger btn-small" onclick="closeHousePicker()">ปิด ❌</button>
+          </div>
+          <p style="color:var(--text-muted); font-size:14px; margin-top:0;">เลือกบ้านที่พิกัดต้องการใช้ — ระบบจะใช้พิกัดเดียวกันกับสมาชิกในบ้านนั้น</p>
+          <div style="max-height:400px; overflow-y:auto;">${listHtml}</div>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+  function selectHouseFromPicker(key) {
+    const [moo, house] = key.split('|');
+    document.getElementById('res-house').value = house;
+    document.getElementById('res-moo').value = moo;
+    closeHousePicker();
+    tryAutoFillCoords();
+  }
+  function closeHousePicker() { const el = document.getElementById('house-picker-overlay'); if (el) el.remove(); }
+  function clearCoords() {
+    const cEl = document.getElementById('res-coords');
+    cEl.value = '';
+    delete cEl.dataset.forHouse;
+    const hint = document.getElementById('coords-hint');
+    if (hint) { hint.textContent = ''; hint.style.color = 'var(--text-muted)'; }
+    toast('ล้างพิกัดแล้ว', 'warn');
+  }
+  function autoFillCoords() { tryAutoFillCoords(); }
+
+  function clearResForm() {
+    document.getElementById('resident-form').reset();
+    const i = document.getElementById('res-citizen-id'); i.readOnly = false; delete i.dataset.realCid;
+    const cEl = document.getElementById('res-coords'); cEl.value = ''; delete cEl.dataset.forHouse;
+    const hint = document.getElementById('coords-hint'); if (hint) { hint.textContent = ''; hint.style.color = 'var(--text-muted)'; }
+  }
+
   function saveResident(e) {
     e.preventDefault();
     const d = String(document.getElementById('dob-day').value).padStart(2, '0');
@@ -1186,8 +1356,34 @@
       hosp_appt: apptIso ? isoToThai(apptIso) : '', owner: currentUser.id,
       coords: document.getElementById('res-coords').value, role_in_house: document.getElementById('res-role').value
     };
-    sendDataToGoogleSheets(data, 'บันทึกประวัติแล้ว', null, (x) => { const i = dbResidents.findIndex(r => r.citizen_id === x.citizen_id); if (i >= 0) dbResidents[i] = x; else dbResidents.push(x); clearResForm(); renderResidents(); renderVHVTasks(); });
+    sendDataToGoogleSheets(data, 'บันทึกประวัติแล้ว', null, (x) => {
+      const i = dbResidents.findIndex(r => r.citizen_id === x.citizen_id);
+      if (i >= 0) dbResidents[i] = x; else dbResidents.push(x);
+      const savedHouse = x.house_no, savedMoo = x.moo, savedCoords = x.coords;
+      clearResForm();
+      if (savedHouse && savedMoo && savedCoords) {
+        setTimeout(() => {
+          const hEl = document.getElementById('res-house');
+          const mEl = document.getElementById('res-moo');
+          const cEl = document.getElementById('res-coords');
+          if (hEl && mEl && cEl) {
+            hEl.value = savedHouse;
+            mEl.value = savedMoo;
+            cEl.value = savedCoords;
+            cEl.dataset.forHouse = `${savedMoo}|${savedHouse}`;
+            const hint = document.getElementById('coords-hint');
+            if (hint) {
+              hint.innerHTML = `🏠 พร้อมบันทึกสมาชิกคนต่อไปของบ้านเลขที่ <b>${esc(savedHouse)}</b> หมู่ <b>${esc(savedMoo)}</b>`;
+              hint.style.color = 'var(--success)';
+            }
+            toast(`🏠 พร้อมบันทึกสมาชิกคนต่อไป — กรอกแค่ชื่อ`, 'ok');
+          }
+        }, 400);
+      }
+      renderResidents(); renderVHVTasks();
+    });
   }
+
   function editResident(cid) {
     const r = dbResidents.find(x => x.citizen_id === cid); if (!r) return;
     const ci = document.getElementById('res-citizen-id');
@@ -1201,10 +1397,22 @@
     document.getElementById('res-disease').value = r.disease === '-' ? '' : (r.disease || '');
     document.getElementById('res-meds').value = r.meds || '';
     document.getElementById('res-coords').value = r.coords || '';
+    const cEl = document.getElementById('res-coords');
+    if (r.coords) cEl.dataset.forHouse = `${r.moo}|${r.house_no}`;
+    const hint = document.getElementById('coords-hint');
+    if (hint) { hint.innerHTML = `📝 กำลังแก้ไขข้อมูล — พิกัดบ้านเลขที่ ${esc(r.house_no)} หมู่ ${esc(r.moo)}`; hint.style.color = 'var(--text-muted)'; }
     document.getElementById('res-gender').value = r.gender || 'ชาย';
     const ap = thaiToDate(r.hosp_appt);
     document.getElementById('res-hosp-appt').value = ap ? `${ap.getFullYear()}-${String(ap.getMonth()+1).padStart(2,'0')}-${String(ap.getDate()).padStart(2,'0')}` : '';
-    if (r.dob) { const p = r.dob.split('/'); if (p.length === 3) { document.getElementById('dob-day').value = p[0]; document.getElementById('dob-month').value = p[1]; document.getElementById('dob-year').value = p[2]; } }
+
+    // ✅ โหลดวันเกิดด้วย parseDobToParts
+    const dobParts = parseDobToParts(r.dob);
+    if (dobParts) {
+      document.getElementById('dob-day').value = dobParts.day;
+      document.getElementById('dob-month').value = dobParts.month;
+      document.getElementById('dob-year').value = dobParts.year;
+    }
+
     document.getElementById('res-age').value = r.age;
     window.scrollTo(0, 0);
   }
@@ -1232,6 +1440,7 @@
         const head = i.role_in_house === 'เจ้าบ้าน' ? `<br><span class="badge-head">เจ้าบ้าน</span>` : '';
         const dis = i.disease && i.disease !== '-' ? `<br><small style="color:var(--danger); font-weight:600;">โรค: ${esc(i.disease)}</small>` : '';
         const call = i.phone ? `<a class="btn-call btn-small" href="tel:${esc(String(i.phone).replace(/[^\d+]/g,''))}">📞 โทร</a>` : '';
+        const nav = i.coords ? `<button type="button" class="btn-outline btn-small" onclick="openMap('${esc(i.citizen_id)}')">🗺️ นำทาง</button>` : '';
         tbody.innerHTML += `<tr>
           <td style="font-weight:bold; color:var(--primary);">${esc(i.house_no || '-')}</td>
           <td>ม.${esc(i.moo || '-')}</td>
@@ -1239,8 +1448,7 @@
           <td>${esc(i.gender || '-')}</td>
           <td>${esc(i.age)}</td>
           <td>${esc(i.group)} ${dis}</td>
-                    <td style="white-space:nowrap;">${call}
-            ${i.coords ? `<button type="button" class="btn-outline btn-small" onclick="openMap('${esc(i.citizen_id)}')">🗺️ นำทาง</button>` : ''}
+          <td style="white-space:nowrap;">${call}${nav}
             <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(i.citizen_id)}')">📝 แก้</button>
             <button type="button" class="btn-small" style="background:#0dcaf0; color:#000;" onclick="openVisitModalByCid('${esc(i.citizen_id)}')">🩺 เยี่ยม</button>
             <button type="button" class="btn-danger btn-small" onclick="deleteResident('${esc(i.citizen_id)}')">🗑️ ลบ</button>
