@@ -1239,7 +1239,8 @@
           <td>${esc(i.gender || '-')}</td>
           <td>${esc(i.age)}</td>
           <td>${esc(i.group)} ${dis}</td>
-          <td style="white-space:nowrap;">${call}
+                    <td style="white-space:nowrap;">${call}
+            ${i.coords ? `<button type="button" class="btn-outline btn-small" onclick="openMap('${esc(i.citizen_id)}')">🗺️ นำทาง</button>` : ''}
             <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(i.citizen_id)}')">📝 แก้</button>
             <button type="button" class="btn-small" style="background:#0dcaf0; color:#000;" onclick="openVisitModalByCid('${esc(i.citizen_id)}')">🩺 เยี่ยม</button>
             <button type="button" class="btn-danger btn-small" onclick="deleteResident('${esc(i.citizen_id)}')">🗑️ ลบ</button>
