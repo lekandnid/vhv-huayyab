@@ -186,7 +186,10 @@
       <div id="tab-larva" class="white-panel hidden" style="border-top-left-radius:0;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <h4 style="margin:0; font-size:18px;">🦟 สถิติลูกน้ำยุงลาย</h4>
-          <button type="button" class="btn-warn" onclick="printLarvalReport('admin')">🖨️ พิมพ์ / PDF</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn-warn" onclick="printLarvalReport('admin')">🖨️ แบบสำรวจ (A4)</button>
+            <button type="button" class="btn-warn" onclick="printLarvalSummary('admin')">📊 สรุปรายหมู่</button>
+          </div>
         </div>
         <div class="form-row" style="margin:15px 0 10px;">
           <div class="form-group"><label>กรองเดือน</label><input type="month" id="admin-larva-month" onchange="renderAdminLarva()"></div>
@@ -334,12 +337,25 @@
           <h4 style="margin:0; font-size:18px;">🦟 สำรวจลูกน้ำยุงลาย</h4>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" onclick="openLarvaModal()">➕ เพิ่มการสำรวจ</button>
-            <button type="button" class="btn-warn" onclick="printLarvalReport('vhv')">🖨️ พิมพ์ / PDF</button>
+            <button type="button" class="btn-warn" onclick="printLarvalReport('vhv')">🖨️ แบบสำรวจ (A4)</button>
           </div>
         </div>
         <div class="form-row" style="margin-bottom:10px;">
           <div class="form-group"><label>กรองเดือน</label><input type="month" id="vhv-larva-month" onchange="renderVHVLarva()"></div>
           <div class="form-group" style="display:flex; align-items:flex-end;"><button type="button" class="btn-outline" onclick="document.getElementById('vhv-larva-month').value='';renderVHVLarva();">ล้าง</button></div>
+        </div>
+        <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <label style="font-weight:700; display:block; margin-bottom:6px;">🏘️ หมู่บ้าน <span style="font-weight:400; color:var(--text-muted); font-size:13px;">(ใส่ในหัวข้อ "บ้าน" ของแบบสำรวจ)</span></label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <select id="vhv-village" onchange="selectVillage(this.value)" style="flex:1; min-width:180px;"></select>
+            <button type="button" onclick="toggleAddVillage(true)">➕ เพิ่มหมู่บ้าน</button>
+            <button type="button" class="btn-danger btn-small" onclick="removeVillage()">🗑️ ลบ</button>
+          </div>
+          <div id="add-village-row" class="hidden" style="display:none; gap:8px; flex-wrap:wrap; margin-top:8px;">
+            <input type="text" id="new-village-name" placeholder="พิมพ์ชื่อหมู่บ้าน เช่น บ้านห้วยยาบ" style="flex:1; min-width:180px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addVillage();}">
+            <button type="button" onclick="addVillage()">💾 บันทึก</button>
+            <button type="button" class="btn-outline" onclick="toggleAddVillage(false)">ยกเลิก</button>
+          </div>
         </div>
         <div class="dashboard-cards" id="vhv-larva-cards"></div>
         <div class="table-responsive">
@@ -472,11 +488,12 @@
 <!-- Modal: larva -->
 <div id="larva-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.6); z-index:1001; display:flex; justify-content:center; align-items:flex-start; padding-top:40px; overflow-y:auto;">
   <div class="white-panel" style="width:95%; max-width:680px; margin-bottom:40px; padding:25px;">
-    <h3 style="border-bottom:2px solid var(--primary); padding-bottom:10px; margin-top:0;">🦟 สำรวจลูกน้ำยุงลาย</h3>
+    <h3 id="larva-modal-title" style="border-bottom:2px solid var(--primary); padding-bottom:10px; margin-top:0;">🦟 สำรวจลูกน้ำยุงลาย</h3>
     <form onsubmit="saveLarvaSurvey(event)">
+      <div id="larva-dup-note" class="hidden" style="background:#fff3cd; border:1px solid #ffe08a; color:#7a5a00; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-weight:600;"></div>
       <div class="form-row">
-        <div class="form-group"><label>บ้านที่สำรวจ *</label><select id="larva-house" required><option value="">-- เลือกบ้าน --</option></select></div>
-        <div class="form-group"><label>วันที่สำรวจ *</label><input type="date" id="larva-date" required></div>
+        <div class="form-group"><label>บ้านที่สำรวจ *</label><select id="larva-house" required onchange="checkLarvaDuplicate(true)"><option value="">-- เลือกบ้าน --</option></select></div>
+        <div class="form-group"><label>วันที่สำรวจ *</label><input type="date" id="larva-date" required onchange="checkLarvaDuplicate(false)"></div>
       </div>
       <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e9ecef; margin-bottom:15px;">
         <strong style="display:block; margin-bottom:10px;">🪣 จำนวนภาชนะ (กรอกเฉพาะที่มีน้ำขัง)</strong>
@@ -501,7 +518,7 @@
   /* ============================================================
    *  🔧 ใส่ URL ของ Google Apps Script (ลงท้าย /exec)
    * ============================================================ */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwaq4Hd2jPlAHlYYC5P1z1qxe_c9IJSsgLr_9dhc0SaMpoi5cwCass7jeZhjYuegzyO/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwJd3715GtUk292WYvckf0BDY5xIt4107lRrN6ZTzsYEnui-9MIH7Uf_FQ2zRDoelJm/exec";
   /* ============================================================ */
 
   const QUEUE_KEY = 'vhv_offline_queue_v1';
@@ -520,13 +537,14 @@
     hosp_name: 'รพ.สต.ห้วยยาบ', hosp_phone: ''
   };
 
+  // ประเภทภาชนะตามแบบฟอร์มกระดาษ รพ.สต.ห้วยยาบ (คง key เดิมไว้ เพื่อให้ใช้ Apps Script / คอลัมน์ชีตเดิมได้)
   const LARVA_TYPES = [
-    { key:'jar', label:'โอ่ง / ตุ่ม / ถังน้ำใช้' },
-    { key:'tank', label:'ภาชนะเก็บน้ำ / ถังซีเมนต์' },
-    { key:'pot', label:'จานรองกระถางต้นไม้' },
-    { key:'vase', label:'แจกัน / ภาชนะใส่น้ำดอกไม้' },
-    { key:'tire', label:'ยางรถยนต์' },
-    { key:'other', label:'ภาชนะอื่นๆ (ขวด/กระป๋อง/กะลา)' }
+    { key:'jar',   col:'น้ำใช้',          label:'น้ำใช้ (โอ่ง / ตุ่ม / ถังน้ำใช้)' },
+    { key:'tank',  col:'น้ำดื่ม',          label:'น้ำดื่ม (โอ่ง / ถังน้ำดื่ม)' },
+    { key:'vase',  col:'ขาตู้กันมด',       label:'ขาตู้กันมด' },
+    { key:'pot',   col:'จานรอง',          label:'จานรอง (กระถางต้นไม้ / ตู้กับข้าว)' },
+    { key:'other', col:'ภาชนะอื่นๆ',       label:'ภาชนะอื่นๆ (แจกัน / ขวด / กะลา)' },
+    { key:'tire',  col:'ภาชนะที่ไม่ใช้',    label:'ภาชนะที่ไม่ใช้ (ยางรถ / เศษภาชนะ)' }
   ];
 
   function showLoader() { document.getElementById('loader').classList.remove('hidden'); }
@@ -551,13 +569,22 @@
   }
   function isoToThai(iso) { if (!iso) return ""; const p = String(iso).split('-'); if (p.length !== 3) return iso; return `${p[2]}/${p[1]}/${parseInt(p[0]) + 543}`; }
   function thaiToDate(s) { if (!s) return null; const p = String(s).split('/'); if (p.length !== 3) return null; const d = new Date(parseInt(p[2]) - 543, parseInt(p[1]) - 1, parseInt(p[0])); return isNaN(d.getTime()) ? null : d; }
+  function parseAnyDate(v) {
+    if (!v) return null;
+    const s = String(v).trim();
+    let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+    if (m) { let y = parseInt(m[3]); if (y > 2400) y -= 543; const d = new Date(y, parseInt(m[2]) - 1, parseInt(m[1])); return isNaN(d) ? null : d; }
+    m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) { let y = parseInt(m[1]); if (y > 2400) y -= 543; const d = new Date(y, parseInt(m[2]) - 1, parseInt(m[3])); return isNaN(d) ? null : d; }
+    const d = new Date(s);
+    if (isNaN(d)) return null;
+    const t = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+    if (t.getFullYear() > 2400) t.setFullYear(t.getFullYear() - 543);
+    return t;
+  }
   function monthKeyOf(dateStr) {
-    if (!dateStr) return "";
-    const th = thaiToDate(dateStr);
-    if (th) return `${th.getFullYear()}-${String(th.getMonth()+1).padStart(2,'0')}`;
-    const iso = String(dateStr).match(/^(\d{4})-(\d{2})/);
-    if (iso) return `${iso[1]}-${iso[2]}`;
-    return "";
+    const d = parseAnyDate(dateStr);
+    return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : "";
   }
   function thaiMonthLabel(mk) {
     if (!mk) return "-";
@@ -1559,34 +1586,87 @@
     const warn = r.posC > 0 ? `<span class="badge-bad">⚠️ พบลูกน้ำ ${r.posC} ภาชนะ</span>` : `<span class="badge-ok">✅ ไม่พบลูกน้ำ</span>`;
     box.innerHTML = `ภาชนะ <b>${r.totalC}</b> ใบ • พบ <b>${r.posC}</b> ใบ ${warn}`;
   }
-  function openLarvaModal() {
+  /* 1 บ้าน บันทึกได้ 1 ครั้งต่อเดือน — ถ้าสำรวจซ้ำ จะแก้ไขรายการเดิมแทนการเพิ่มบรรทัดใหม่ */
+  let larvaEditId = null;
+  function dateToISO(v) { const d = parseAnyDate(v); return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` : todayISO(); }
+  function findLarvaSameMonth(moo, house, iso, exceptId) {
+    const mk = String(iso || '').slice(0, 7);
+    return dbLarval.filter(r => r.id !== exceptId && normMoo(r.moo) === normMoo(moo) && String(r.house_no).trim() === String(house).trim() && monthKeyOf(r.date) === mk);
+  }
+  function fillLarvaForm(rec) {
+    LARVA_TYPES.forEach(t => {
+      document.getElementById('lt-' + t.key).value = rec ? num(rec[t.key + '_total']) : 0;
+      document.getElementById('lp-' + t.key).value = rec ? num(rec[t.key + '_pos']) : 0;
+    });
+    document.getElementById('larva-note').value = rec ? (rec.note || '') : '';
+    updateLarvaLiveSummary();
+  }
+  function setLarvaEditMode(rec) {
+    larvaEditId = rec ? rec.id : null;
+    document.getElementById('larva-modal-title').textContent = rec ? '✏️ แก้ไขผลสำรวจลูกน้ำยุงลาย' : '🦟 สำรวจลูกน้ำยุงลาย';
+    const note = document.getElementById('larva-dup-note');
+    if (rec) {
+      note.innerHTML = `⚠️ บ้านนี้สำรวจแล้วในเดือน ${esc(thaiMonthLabel(monthKeyOf(rec.date)))} (วันที่ ${esc(formatCleanDate(rec.date))})<br>กดบันทึก = <u>แก้ไขรายการเดิม</u> ไม่เพิ่มบรรทัดใหม่`;
+      note.classList.remove('hidden');
+    } else { note.innerHTML = ''; note.classList.add('hidden'); }
+  }
+  // เลือกบ้าน/เปลี่ยนวันที่ → ถ้าเดือนนั้นมีผลสำรวจของบ้านนี้แล้ว ดึงค่าเดิมมาให้แก้ไข
+  function checkLarvaDuplicate(houseChanged) {
+    const k = document.getElementById('larva-house').value;
+    const iso = document.getElementById('larva-date').value;
+    if (!k || !iso) { if (houseChanged) { setLarvaEditMode(null); fillLarvaForm(null); } return; }
+    const [moo, house] = k.split('|');
+    const dup = findLarvaSameMonth(moo, house, iso).sort((x, y) => ((parseAnyDate(y.date) || 0) - (parseAnyDate(x.date) || 0)))[0];   // ใช้ครั้งล่าสุด
+    const wasEdit = !!larvaEditId;
+    if (dup) { setLarvaEditMode(dup); if (houseChanged || !wasEdit || dup.id !== larvaEditId) fillLarvaForm(dup); }
+    else { setLarvaEditMode(null); if (wasEdit) fillLarvaForm(null); }
+  }
+  function openLarvaModal(editId) {
     const sel = document.getElementById('larva-house');
     const mine = dbResidents.filter(r => r.owner === currentUser.id);
     const map = {}; mine.forEach(r => { const k = `${r.moo}|${r.house_no}`; if (!map[k]) map[k] = r; });
     const keys = Object.keys(map).sort((a, b) => { const [am, ah] = a.split('|'), [bm, bh] = b.split('|'); return cmpNum(am, bm) || cmpNum(ah, bh); });
     sel.innerHTML = '<option value="">-- เลือกบ้าน --</option>' + keys.map(k => { const [m, h] = k.split('|'); return `<option value="${esc(k)}">บ้าน ${esc(h)} หมู่ ${esc(m)} (${esc(map[k].name)})</option>`; }).join('');
-    document.getElementById('larva-date').value = todayISO();
-    document.getElementById('larva-note').value = '';
-    LARVA_TYPES.forEach(t => { document.getElementById('lt-' + t.key).value = 0; document.getElementById('lp-' + t.key).value = 0; });
-    updateLarvaLiveSummary();
+    const rec = editId ? dbLarval.find(r => r.id === editId) : null;
+    if (rec) {
+      let key = keys.find(k => { const [m, h] = k.split('|'); return normMoo(m) === normMoo(rec.moo) && String(h).trim() === String(rec.house_no).trim(); });
+      if (!key) { key = `${rec.moo}|${rec.house_no}`; sel.innerHTML += `<option value="${esc(key)}">บ้าน ${esc(rec.house_no)} หมู่ ${esc(rec.moo)}</option>`; }
+      sel.value = key;
+      document.getElementById('larva-date').value = dateToISO(rec.date);
+      fillLarvaForm(rec); setLarvaEditMode(rec);
+    } else {
+      document.getElementById('larva-date').value = todayISO();
+      fillLarvaForm(null); setLarvaEditMode(null);
+    }
     document.getElementById('larva-modal').classList.remove('hidden');
   }
-  function closeLarvaModal() { document.getElementById('larva-modal').classList.add('hidden'); }
+  function closeLarvaModal() { document.getElementById('larva-modal').classList.add('hidden'); larvaEditId = null; }
   function saveLarvaSurvey(e) {
     e.preventDefault();
     const k = document.getElementById('larva-house').value;
     if (!k) return alert('กรุณาเลือกบ้าน');
     const [moo, house] = k.split('|');
+    const iso = document.getElementById('larva-date').value;
     const r = getLarvaFormValues();
     const head = dbResidents.find(x => x.owner === currentUser.id && x.moo === moo && x.house_no === house && x.role_in_house === 'เจ้าบ้าน') || dbResidents.find(x => x.owner === currentUser.id && x.moo === moo && x.house_no === house);
+    // รายการเดิมที่ต้องแทนที่: ตัวที่กำลังแก้ + บ้านเดียวกันในเดือนเดียวกัน (กันบรรทัดซ้ำ)
+    const old = findLarvaSameMonth(moo, house, iso).map(x => x.id);
+    if (larvaEditId && !old.includes(larvaEditId)) old.push(larvaEditId);
+    const isEdit = old.length > 0;
     const rec = Object.assign({
       action: 'save_larval', id: 'L' + Date.now() + Math.random().toString(36).slice(2, 6),
-      date: isoToThai(document.getElementById('larva-date').value),
+      date: isoToThai(iso),
       house_no: house, moo: moo, citizen_id: head ? head.citizen_id : '',
       vhv_id: currentUser.id, vhv_name: currentUser.name,
       note: document.getElementById('larva-note').value
     }, r.vals);
-    sendDataToGoogleSheets(rec, 'บันทึกผลสำรวจแล้ว', null, () => { dbLarval.push(rec); closeLarvaModal(); renderVHVLarva(); });
+    // ลบรายการเดิม แล้วบันทึกค่าใหม่ (ใช้คำสั่ง delete_larval / save_larval เดิมของ Apps Script)
+    old.forEach(id => sendDataToGoogleSheets({ action: 'delete_larval', id: id }, null, null, null));
+    dbLarval = dbLarval.filter(x => !old.includes(x.id));
+    sendDataToGoogleSheets(rec, isEdit ? 'แก้ไขผลสำรวจแล้ว (แทนที่รายการเดิม)' : 'บันทึกผลสำรวจแล้ว', null, () => {
+      if (!dbLarval.some(x => x.id === rec.id)) dbLarval.push(rec);
+      closeLarvaModal(); renderVHVLarva();
+    });
   }
   function larvaRecordStats(rec) {
     let totalC = 0, posC = 0;
@@ -1611,6 +1691,7 @@
   function filterLarvalByMonth(records, mk) { if (!mk) return records; return records.filter(r => monthKeyOf(r.date) === mk); }
 
   function renderVHVLarva() {
+    renderVillageSelect();
     const mk = document.getElementById('vhv-larva-month').value;
     const filtered = filterLarvalByMonth(dbLarval.filter(r => r.vhv_id === currentUser.id), mk);
     const s = larvaSummaryOf(filtered);
@@ -1634,7 +1715,7 @@
         <td style="font-weight:bold; color:${bad ? 'var(--danger)' : 'var(--success)'};">${st.posC}</td>
         <td>${hi.toFixed(0)} / ${st.posC} / ${ci.toFixed(1)}</td>
         <td>${bad ? '<span class="badge-bad">⚠️ พบ</span>' : '<span class="badge-ok">✅ ปลอด</span>'}</td>
-        <td><button type="button" class="btn-danger btn-small" onclick="deleteLarva('${esc(rec.id)}')">🗑️ ลบ</button></td></tr>`;
+        <td style="white-space:nowrap;"><button type="button" class="btn-small" onclick="openLarvaModal('${esc(rec.id)}')">✏️ แก้ไข</button> <button type="button" class="btn-danger btn-small" onclick="deleteLarva('${esc(rec.id)}')">🗑️ ลบ</button></td></tr>`;
     });
   }
   function deleteLarva(id) {
@@ -1686,7 +1767,7 @@
   }
 
   /* ========== PDF Report ========== */
-  function printLarvalReport(mode) {
+  function printLarvalSummary(mode) {
     let records, mk, title, subtitle, reporterName, reporterRole;
     if (mode === 'vhv') {
       const mEl = document.getElementById('vhv-larva-month'); mk = mEl ? mEl.value : '';
@@ -1776,6 +1857,260 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
     const w = window.open('', '_blank');
     if (!w) { alert('⚠️ เบราว์เซอร์บล็อก Popup\nกรุณาอนุญาต popup แล้วลองใหม่'); return; }
     w.document.open(); w.document.write(html); w.document.close();
+  }
+
+
+  /* ========== แบบสำรวจลูกน้ำยุงลาย (A4 ตามแบบฟอร์มกระดาษ) ========== */
+  const VILLAGE_KEY = 'larva_village_names_v1';
+  function getVillageNames() { try { return JSON.parse(localStorage.getItem(VILLAGE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function setVillageName(moo, name) { try { const m = getVillageNames(); m[String(moo)] = name; localStorage.setItem(VILLAGE_KEY, JSON.stringify(m)); } catch (e) {} }
+  function normMoo(v) { const m = String(v || '').match(/\d+/); return m ? String(parseInt(m[0])) : String(v || '').trim(); }
+
+  /* ----- รายชื่อหมู่บ้าน (เก็บในเครื่อง) ----- */
+  const VLIST_KEY = 'larva_village_list_v1', VSEL_KEY = 'larva_village_selected_v1';
+  function getVillageList() { try { const a = JSON.parse(localStorage.getItem(VLIST_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function saveVillageList(a) { try { localStorage.setItem(VLIST_KEY, JSON.stringify(a)); } catch (e) {} }
+  function getSelectedVillage() { try { return localStorage.getItem(VSEL_KEY) || ''; } catch (e) { return ''; } }
+  function selectVillage(v) { try { localStorage.setItem(VSEL_KEY, v || ''); } catch (e) {} }
+  function renderVillageSelect() {
+    const sel = document.getElementById('vhv-village'); if (!sel) return;
+    const list = getVillageList(); let cur = getSelectedVillage();
+    if (cur && !list.includes(cur)) cur = '';
+    sel.innerHTML = '<option value="">-- เลือกหมู่บ้าน --</option>' + list.map(v => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
+  }
+  function toggleAddVillage(show) {
+    const row = document.getElementById('add-village-row'); if (!row) return;
+    row.classList.toggle('hidden', !show);
+    row.style.display = show ? 'flex' : 'none';
+    const inp = document.getElementById('new-village-name'); inp.value = ''; if (show) inp.focus();
+  }
+  function addVillage() {
+    const name = document.getElementById('new-village-name').value.trim();
+    if (!name) { toast('กรุณาพิมพ์ชื่อหมู่บ้าน', 'warn'); return; }
+    const list = getVillageList();
+    if (!list.includes(name)) { list.push(name); saveVillageList(list); }
+    selectVillage(name); renderVillageSelect(); toggleAddVillage(false);
+    toast('เพิ่มหมู่บ้าน "' + name + '" แล้ว');
+  }
+  function removeVillage() {
+    const v = document.getElementById('vhv-village').value;
+    if (!v) { toast('ยังไม่ได้เลือกหมู่บ้าน', 'warn'); return; }
+    if (!confirm('ลบหมู่บ้าน "' + v + '" ออกจากรายการ?')) return;
+    saveVillageList(getVillageList().filter(x => x !== v)); selectVillage(''); renderVillageSelect();
+  }
+
+  function printLarvalReport(mode) {
+    const isVHV = mode === 'vhv';
+    const mEl = document.getElementById(isVHV ? 'vhv-larva-month' : 'admin-larva-month');
+    let src = isVHV ? dbLarval.filter(r => r.vhv_id === currentUser.id) : dbLarval.slice();
+
+    // เลือกเดือน: ใช้เดือนที่กรองไว้ ถ้าไม่ได้เลือก ใช้เดือนล่าสุดที่มีข้อมูล
+    let mk = mEl ? mEl.value : '';
+    if (!mk) {
+      const keys = src.map(r => monthKeyOf(r.date)).filter(Boolean).sort();
+      mk = keys.length ? keys[keys.length - 1] : todayISO().slice(0, 7);
+      if (mEl) { mEl.value = mk; if (isVHV) renderVHVLarva(); else renderAdminLarva(); }
+      toast('ออกรายงานเดือน ' + thaiMonthLabel(mk));
+    }
+    src = src.filter(r => monthKeyOf(r.date) === mk).map((r, i) => Object.assign({ _i: i, _moo: normMoo(r.moo) }, r));
+
+    // อสม. = 1 แบบฟอร์มต่อเดือน (ทุกบ้านที่สำรวจอยู่ตารางเดียวกัน) / ผู้ดูแล = แยกตามหมู่
+    const groups = {};
+    src.forEach(r => { const k = isVHV ? 'all' : r._moo; (groups[k] = groups[k] || { recs: [] }).recs.push(r); });
+    let gKeys = Object.keys(groups).sort(cmpNum);
+    let blankForm = false;
+    if (!gKeys.length) {
+      if (!confirm('ไม่พบข้อมูลการสำรวจเดือน ' + thaiMonthLabel(mk) + '\nต้องการพิมพ์แบบฟอร์มเปล่าไว้กรอกด้วยมือหรือไม่?')) return;
+      groups.all = { recs: [] }; gKeys = ['all']; blankForm = true;
+    }
+    const myMoo = isVHV ? normMoo((dbVHV.find(u => u.vhv_id === currentUser.id) || {}).moo) : '';
+
+    const MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const [yy, mm] = mk.split('-');
+    const monTxt = MONTHS[parseInt(mm) - 1], yrTxt = String(parseInt(yy) + 543);
+    const ROWS = 15;
+    const D = '';   // แถว/ช่องที่ไม่มีบ้านเลขที่ เว้นว่าง (ใส่ - เฉพาะแถวที่มีบ้านเลขที่)
+    const show = v => (v === '' || v === null || v === undefined) ? D : v;
+    const fill = (v, w, cls) => `<span class="fill ${cls || ''}" style="min-width:${w}">${(v === '' || v === null || v === undefined) ? (D || '&nbsp;') : esc(v)}</span>`;
+    const sign = w => `<span class="fill" style="min-width:${w}">&nbsp;</span>`;   // ช่องเซ็นมือ เว้นว่าง
+    const villages = getVillageNames();
+    let pagesHtml = '';
+
+    gKeys.forEach(gk => {
+      const g = groups[gk];
+      // บ้านเดียวกันสำรวจหลายครั้งในเดือน → ใช้ครั้งล่าสุด
+      const latest = {};
+      g.recs.forEach(r => {
+        const k = r._moo + '|' + String(r.house_no || '').trim();
+        const cur = latest[k];
+        const t = (parseAnyDate(r.date) || new Date(0)).getTime();
+        const tc = cur ? (parseAnyDate(cur.date) || new Date(0)).getTime() : -1;
+        if (!cur || t > tc || (t === tc && r._i > cur._i)) latest[k] = r;
+      });
+      const houseRecs = Object.values(latest).sort((a, b) => cmpNum(a._moo, b._moo) || cmpNum(a.house_no, b.house_no));
+      const sum = larvaSummaryOf(houseRecs);
+      const moos = [...new Set(houseRecs.map(r => r._moo))].sort(cmpNum);
+      const mooTxt = moos.length ? moos.join(', ') : (isVHV ? myMoo : gk);
+      const multiMoo = moos.length > 1;
+      const vKey = mooTxt;
+      const village = (isVHV && getSelectedVillage()) || villages[vKey] || '';
+      if (isVHV && getSelectedVillage()) villages[vKey] = getSelectedVillage();
+
+      const days = [...new Set(g.recs.map(r => { const d = parseAnyDate(r.date); return d ? d.getDate() : null; }).filter(Boolean))].sort((a, b) => a - b);
+      const dayTxt = days.length === 0 ? '' : (days.length <= 3 ? days.join(', ') : days[0] + '–' + days[days.length - 1]);
+      const surveyor = isVHV ? currentUser.name : [...new Set(g.recs.map(r => r.vhv_name || r.vhv_id).filter(Boolean))].join(', ');
+
+      const rowHtml = houseRecs.map(r => {
+        const members = dbResidents.filter(x => normMoo(x.moo) === r._moo && String(x.house_no).trim() === String(r.house_no).trim()).length;
+        const st = larvaRecordStats(r);
+        const hn = esc(r.house_no || '-') + (multiMoo ? `<small> ม.${esc(r._moo)}</small>` : '');
+        let tds = `<td class="hn">${hn}</td><td>${members || '-'}</td>`;
+        LARVA_TYPES.forEach(t => {
+          const tot = num(r[t.key + '_total']), pos = Math.min(num(r[t.key + '_pos']), tot);
+          tds += tot > 0 ? `<td class="${pos > 0 ? 'pos' : ''}">${pos}</td><td>${tot - pos}</td>` : '<td>-</td><td>-</td>';
+        });
+        tds += `<td>${st.totalC || '-'}</td><td class="${st.posC > 0 ? 'pos' : ''}">${st.posC}</td>`;
+        return `<tr>${tds}</tr>`;
+      });
+
+      const chunks = [];
+      for (let i = 0; i < Math.max(rowHtml.length, 1); i += ROWS) chunks.push(rowHtml.slice(i, i + ROWS));
+      const blankRow = '<tr class="empty">' + `<td>${D}</td>`.repeat(16) + '</tr>';
+      const headTop = LARVA_TYPES.map(t => `<th colspan="2">${esc(t.col)}</th>`).join('');
+      const headSub = LARVA_TYPES.map(() => '<th>พบ</th><th>ไม่พบ</th>').join('');
+      const has = houseRecs.length > 0;
+      const villageSpan = w => `<span class="fill village" data-vkey="${esc(vKey)}" contenteditable="true" spellcheck="false" style="min-width:${w}">${village ? esc(village) : (D || '&nbsp;')}</span>`;
+
+      chunks.forEach((rows, ci) => {
+        const last = ci === chunks.length - 1;
+        while (rows.length < ROWS) rows.push(blankRow);
+        pagesHtml += `
+<section class="sheet">
+  ${chunks.length > 1 ? `<div class="pageno">แผ่นที่ ${ci + 1}/${chunks.length}</div>` : ''}
+  <div class="title">แบบสำรวจลูกน้ำยุงลาย ประจำเดือน ${fill(monTxt + ' ' + yrTxt, '45mm')}</div>
+  <div class="title2">ในเขตโรงพยาบาลส่งเสริมสุขภาพตำบลห้วยยาบ</div>
+  <div class="line">วันที่สำรวจ ${fill(dayTxt, '14mm')} เดือน ${fill(monTxt, '28mm')} พ.ศ. ${fill(yrTxt, '14mm')} อสม.ที่สำรวจ ${fill(surveyor, '60mm')}</div>
+  <div class="line">หมู่ที่ ${fill(mooTxt, '24mm')} บ้าน ${villageSpan('52mm')} ต.ห้วยยาบ อ.บ้านธิ จ.ลำพูน</div>
+  <table class="grid">
+    <colgroup><col style="width:11%"><col style="width:8%">${'<col>'.repeat(14)}</colgroup>
+    <thead>
+      <tr><th rowspan="2" class="hn-h">บ้านเลขที่</th><th>สมาชิก</th>${headTop}<th colspan="2">รวม</th></tr>
+      <tr><th>ในครอบครัว</th>${headSub}<th>ทั้งหมด</th><th>พบ</th></tr>
+    </thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>
+  ${last ? `
+  <div class="sumwrap">
+    <div class="sumcol">
+      <div class="sline"><span>จำนวนหลังคาเรือนที่สำรวจ</span>${fill(has ? sum.houseCount : '', '38mm')}<span>หลัง</span></div>
+      <div class="sline"><span>จำนวนภาชนะที่สำรวจทั้งหมด</span>${fill(has ? sum.totalC : '', '38mm')}<span>ชิ้น</span></div>
+      <div class="sline"><span>จำนวนภาชนะที่พบลูกน้ำ</span>${fill(has ? sum.posC : '', '38mm')}<span>ชิ้น</span></div>
+      <div class="sline"><span>จำนวนบ้านที่พบลูกน้ำยุงลาย</span>${fill(has ? sum.posHouses : '', '38mm')}<span>หลัง</span></div>
+    </div>
+    <div class="sumcol">
+      <div class="sline"><span>คิดเป็นค่า BI</span>${fill(has ? sum.BI.toFixed(2) : '', '48mm')}</div>
+      <div class="sline"><span>คิดเป็นค่า CI</span>${fill(has ? sum.CI.toFixed(2) : '', '48mm')}</div>
+    </div>
+  </div>
+  <div class="signs">
+    <div class="sg">
+      <div>ลงชื่อ ${sign('40mm')} ผู้รวบรวมและตรวจสอบ</div>
+      <div class="indent">( ${sign('48mm')} )</div>
+      <div>ประธาน อสม.หมู่ที่ ${fill(mooTxt, '12mm')} บ้าน ${villageSpan('26mm')}</div>
+      <div>วันที่ ${sign('10mm')} เดือน ${sign('24mm')} ปี ${sign('16mm')}</div>
+    </div>
+    <div class="sg">
+      <div>ลงชื่อเจ้าหน้าที่ ${sign('30mm')} ผู้ตรวจสอบและรับรอง</div>
+      <div class="indent">( ${sign('48mm')} )</div>
+      <div>ตำแหน่ง ${sign('52mm')}</div>
+      <div>วันที่ ${sign('10mm')} เดือน ${sign('24mm')} ปี ${sign('16mm')}</div>
+    </div>
+  </div>` : `<div class="cont">(มีต่อแผ่นถัดไป)</div>`}
+</section>`;
+      });
+    });
+
+    const vkeys = [...new Set(gKeys.map(k => {
+      const rs = groups[k].recs; const ms = [...new Set(rs.map(r => r._moo))].sort(cmpNum);
+      return ms.length ? ms.join(', ') : (isVHV ? myMoo : k);
+    }))];
+    const villageInputs = vkeys.map(k => `<label class="vl">🏘️ ชื่อหมู่บ้าน${vkeys.length > 1 || k ? ' (หมู่ ' + esc(k || '-') + ')' : ''}
+      <input type="text" data-vkey="${esc(k)}" value="${esc(villages[k] || '')}" placeholder="เช่น บ้านห้วยยาบ"></label>`).join('');
+
+    const docTitle = 'แบบสำรวจลูกน้ำยุงลาย - ' + thaiMonthLabel(mk);
+    const html = `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${esc(docTitle)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet"><style>
+* { box-sizing:border-box; }
+body { margin:0; background:#dfe3e8; font-family:'Sarabun',sans-serif; color:#000; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.toolbar { position:sticky; top:0; z-index:5; text-align:center; padding:10px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.12); margin-bottom:12px; }
+.toolbar button { padding:10px 22px; font-size:15px; background:#0066cc; color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:'Sarabun'; font-weight:700; margin:3px; }
+.toolbar .hint { color:#666; font-size:12px; margin-top:4px; }
+.vrow { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 16px; margin:4px 0 6px; }
+.vl { font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; }
+.vl input { font-family:'Sarabun'; font-size:15px; padding:7px 10px; border:2px solid #0066cc; border-radius:6px; width:220px; max-width:70vw; }
+.sheet { position:relative; width:210mm; height:297mm; margin:0 auto 12px; padding:13mm 11mm 10mm; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.15); overflow:hidden; font-size:13.5px; }
+.pageno { position:absolute; top:6mm; right:11mm; font-size:11px; color:#444; }
+.title { text-align:center; font-weight:700; font-size:16px; margin-top:4mm; }
+.title2 { text-align:center; font-weight:700; font-size:15px; margin:2mm 0 3mm; }
+.line { text-align:center; font-weight:600; margin:2mm 0; font-size:14px; }
+.fill { display:inline-block; border-bottom:1.2px dotted #000; text-align:center; padding:0 3px; line-height:1.25; font-weight:400; color:#0a2a8a; }
+.fill.village { outline:none; background:#fff8d6; cursor:text; }
+.grid { width:100%; border-collapse:collapse; table-layout:fixed; margin-top:4mm; }
+.grid th, .grid td { border:1.3px solid #000; text-align:center; padding:0 1px; }
+.grid th { font-weight:600; font-size:12px; line-height:1.15; height:7mm; }
+.grid th.hn-h { vertical-align:bottom; padding-bottom:1mm; }
+.grid td { height:8.6mm; font-size:13px; color:#0a2a8a; }
+.grid td.hn { font-weight:600; } .grid td.hn small { font-weight:400; font-size:10px; }
+.grid td.pos { color:#b00020; font-weight:700; }
+.grid tr.empty td { color:#777; }
+.sumwrap { display:flex; justify-content:space-between; margin-top:6mm; gap:6mm; }
+.sumcol { flex:1; } .sumcol:last-child { flex:.8; }
+.sline { display:flex; align-items:flex-end; gap:4px; margin:2.2mm 0; font-weight:600; white-space:nowrap; }
+.sline .fill { flex:1; }
+.signs { display:flex; justify-content:space-between; margin-top:9mm; gap:8mm; }
+.sg { flex:1; font-weight:600; } .sg > div { margin:3mm 0; white-space:nowrap; } .sg .indent { padding-left:8mm; }
+.cont { text-align:right; margin-top:4mm; font-size:12px; color:#444; }
+@media print {
+  @page { size:A4 portrait; margin:0; }
+  body { background:#fff; }
+  .toolbar { display:none !important; }
+  .sheet { margin:0; box-shadow:none; zoom:1 !important; height:296.5mm; page-break-after:always; break-after:page; }
+  .sheet:last-of-type { page-break-after:auto; break-after:auto; }
+  .fill, .grid td, .grid tr.empty td { color:#000; }
+  .fill.village { background:none; }
+  .grid td.pos { color:#000; }
+}
+</style></head><body>
+<div class="toolbar">
+  <div class="vrow">${villageInputs}</div>
+  <button onclick="window.print()">🖨️ พิมพ์ / บันทึกเป็น PDF</button>
+  <button onclick="window.close()" style="background:#6c757d;">ปิดหน้านี้</button>
+  <div class="hint">พิมพ์ชื่อหมู่บ้านครั้งเดียว ระบบจำไว้ใช้ครั้งต่อไป • A4 แนวตั้ง ขอบกระดาษ "ไม่มี" ขนาด 100%</div>
+</div>
+${pagesHtml}
+</body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { alert('⚠️ เบราว์เซอร์บล็อก Popup\nกรุณาอนุญาต popup แล้วลองใหม่'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+    wireLarvaPrint(w, D);
+  }
+  // ผูกช่องชื่อหมู่บ้าน + ย่อหน้ากระดาษให้พอดีจอ (สั่งจากหน้าหลัก ไม่ต้องรอฟอนต์โหลด ใช้ได้ตอนออฟไลน์)
+  function wireLarvaPrint(w, EMPTY) {
+    const d = w.document;
+    const blank = EMPTY || '\u00a0';
+    const setV = (key, val, from) => {
+      d.querySelectorAll('.fill.village').forEach(el => { if (el.getAttribute('data-vkey') === key && el !== from) el.textContent = val || blank; });
+      d.querySelectorAll('.vl input').forEach(el => { if (el.getAttribute('data-vkey') === key && el !== from) el.value = val; });
+      setVillageName(key, val);
+    };
+    d.querySelectorAll('.vl input').forEach(inp => inp.addEventListener('input', () => setV(inp.getAttribute('data-vkey'), inp.value.trim(), inp)));
+    d.querySelectorAll('.fill.village').forEach(el => {
+      el.addEventListener('focus', () => { if (el.textContent.trim() === EMPTY) el.textContent = ''; });
+      el.addEventListener('input', () => setV(el.getAttribute('data-vkey'), el.textContent.trim(), el));
+      el.addEventListener('blur', () => { if (!el.textContent.trim()) el.textContent = blank; });
+    });
+    const fit = () => { const z = Math.min(1, (w.innerWidth - 12) / (210 * 96 / 25.4)); d.querySelectorAll('.sheet').forEach(el => { el.style.zoom = z; }); };
+    w.addEventListener('resize', fit); fit();
   }
 
   /* ========== Monthly report ========== */
