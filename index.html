@@ -82,12 +82,36 @@
   @media print { body * { visibility:hidden !important; } #report-print, #report-print * { visibility:visible !important; } #report-print { display:block !important; position:absolute; left:0; top:0; width:100%; border:none; box-shadow:none; padding:0; } .no-print { display:none !important; } }
   @media (max-width:600px) { .header-bar { flex-direction:column; align-items:flex-start; } .stat-card h2 { font-size:1.7em; } }
   .cid-line { font-family:monospace; font-size:13px; color:#334; letter-spacing:.3px; white-space:nowrap; }
+  .tool-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-bottom:12px; }
+  .btn-success { background:#198754 !important; color:#fff !important; }
+  .dq-badge { background:#dc3545; color:#fff; border-radius:10px; padding:0 7px; font-size:12px; margin-left:3px; }
+  .prog-wrap { background:#fff; border:1px solid var(--border-color); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
+  .prog-bar { height:14px; background:#e9ecef; border-radius:8px; overflow:hidden; margin:8px 0; }
+  .prog-bar > div { height:100%; background:linear-gradient(90deg,#28a745,#5cd67c); transition:width .4s; }
+  .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip { border:1px solid #f0ad4e; background:#fff8e6; color:#7a5200; border-radius:16px; padding:4px 10px; font-size:13px; cursor:pointer; font-family:inherit; }
+  .chip:hover { background:#ffefc2; }
+  .appt-card { border-left:5px solid #0d6efd; background:#fff; padding:12px 14px; margin-bottom:10px; border-radius:6px; border-top:1px solid #eee; border-right:1px solid #eee; border-bottom:1px solid #eee; }
+  .dq-item { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:9px 0; border-bottom:1px dashed #e3e3e3; flex-wrap:wrap; }
+  .dq-tag { display:inline-block; background:#fdecea; color:#a71d2a; border-radius:4px; padding:1px 6px; font-size:12px; margin:2px 4px 2px 0; }
+  .map-legend { display:flex; gap:14px; flex-wrap:wrap; font-size:13px; margin-bottom:6px; align-items:center; }
+  .map-legend i { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:4px; vertical-align:-1px; border:2px solid #fff; box-shadow:0 0 0 1px #999; }
 </style>
 </head>
 <body>
 
 <div id="loader" class="hidden"><div class="spinner"></div><p style="margin-top:15px; font-weight:bold; color:var(--primary);">กำลังประมวลผลข้อมูล...</p></div>
 <div id="toast-wrap"></div>
+<div id="map-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1100; display:flex; justify-content:center; align-items:center; padding:10px;">
+  <div class="white-panel" style="width:100%; max-width:900px; height:92vh; margin:0; padding:12px; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+      <strong style="font-size:17px;">🗺️ แผนที่บ้าน <span id="map-title" style="font-weight:400; font-size:14px; color:var(--text-muted);"></span></strong>
+      <button type="button" class="btn-outline btn-small" onclick="closeHouseMap()">ปิด ❌</button>
+    </div>
+    <div class="map-legend"><span><i style="background:#dc3545"></i>พบลูกน้ำ</span><span><i style="background:#28a745"></i>ปลอดลูกน้ำ</span><span><i style="background:#9aa0a6"></i>ยังไม่สำรวจ</span><span id="map-nocoord" style="color:var(--text-muted);"></span></div>
+    <div id="map-box" style="flex:1; border-radius:8px; border:1px solid var(--border-color); min-height:300px;"></div>
+  </div>
+</div>
 
 <div class="container">
   
@@ -134,10 +158,16 @@
         <button type="button" id="tab-btn-allres" onclick="switchAdminTab('allres')">🏠 ค้นหาลูกบ้าน</button>
         <button type="button" id="tab-btn-larva" onclick="switchAdminTab('larva')">🦟 สถิติลูกน้ำ</button>
         <button type="button" id="tab-btn-vhv" onclick="switchAdminTab('vhv')">👥 จัดการ อสม.</button>
+        <button type="button" id="tab-btn-dq" onclick="switchAdminTab('dq')">🧹 ตรวจข้อมูล <span id="dq-badge" class="dq-badge hidden"></span></button>
         <button type="button" id="tab-btn-settings" onclick="switchAdminTab('settings')">⚙️ ตั้งค่า</button>
       </div>
 
       <div id="tab-doc" class="white-panel" style="border-top-left-radius:0;">
+        <div class="tool-row">
+          <button type="button" class="btn-success" onclick="exportExcel('admin')">📥 ส่งออก Excel (ทั้งตำบล)</button>
+          <button type="button" class="btn-outline" onclick="openHouseMap('admin')">🗺️ แผนที่บ้าน</button>
+        </div>
+        <div id="admin-appt-panel"></div>
         <div class="dashboard-cards">
           <div class="stat-card card-blue"><h2 id="stat-total">0</h2><p>ลูกบ้านทั้งหมด</p></div>
           <div class="stat-card card-red"><h2 id="stat-red">0</h2><p>🔴 ฉุกเฉิน</p></div>
@@ -189,6 +219,7 @@
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" class="btn-warn" onclick="printLarvalReport('admin')">🖨️ แบบสำรวจ (A4)</button>
             <button type="button" class="btn-warn" onclick="printLarvalSummary('admin')">📊 สรุปรายหมู่</button>
+            <button type="button" class="btn-outline" onclick="openHouseMap('admin')">🗺️ แผนที่</button>
           </div>
         </div>
         <div class="form-row" style="margin:15px 0 10px;">
@@ -229,6 +260,12 @@
         </div>
       </div>
 
+      <div id="tab-dq" class="white-panel hidden" style="border-top-left-radius:0;">
+        <h4 style="margin:0 0 6px; font-size:18px;">🧹 ข้อมูลที่ควรแก้</h4>
+        <p style="color:var(--text-muted); font-size:14px; margin-top:0;">ระบบตรวจอัตโนมัติ — แจ้ง อสม. ผู้ดูแลให้แก้ในแฟ้มทะเบียนลูกบ้าน (ปุ่ม 📝 แก้)</p>
+        <div id="admin-dq-list"></div>
+      </div>
+
       <div id="tab-settings" class="white-panel hidden" style="border-top-left-radius:0;">
         <h4 style="margin-bottom:5px; font-size:18px;">⚙️ เกณฑ์แจ้งเตือนค่าผิดปกติ</h4>
         <p style="color:var(--text-muted); font-size:14px; margin-top:0;">กำหนดโดยแพทย์ — ระบบจะแนะนำระดับความฉุกเฉินให้ อสม. อัตโนมัติ</p>
@@ -263,12 +300,14 @@
         <div class="white-panel" style="background:#f0f7ff; border-left:5px solid var(--primary); box-shadow:none;">
           <h4 style="margin-bottom:15px; font-size:18px;">📋 ภารกิจเยี่ยมบ้าน</h4>
           <div id="vhv-task-list"></div>
+          <div id="vhv-appt-panel"></div>
         </div>
+        <div id="vhv-dq-panel"></div>
 
         <form id="resident-form" class="white-panel" onsubmit="saveResident(event)" style="box-shadow:none; border:1px solid var(--border-color);">
           <h4 style="margin-bottom:15px; border-bottom:2px solid var(--primary); display:inline-block; padding-bottom:5px;">📝 แฟ้มทะเบียนลูกบ้าน</h4>
           <div class="form-row">
-            <div class="form-group"><label>เลขบัตรประชาชน (13 หลัก) *</label><input type="text" inputmode="numeric" id="res-citizen-id" maxlength="13" required></div>
+            <div class="form-group"><label>เลขบัตรประชาชน (13 หลัก) *</label><input type="text" inputmode="numeric" id="res-citizen-id" maxlength="13" required oninput="checkCidDupLive()"><small id="cid-dup-hint" style="display:block; color:var(--danger); font-weight:600; margin-top:3px;"></small></div>
             <div class="form-group"><label>ชื่อ-นามสกุล *</label><input type="text" id="res-name" required></div>
             <div class="form-group" style="max-width:120px;"><label>เพศ *</label><select id="res-gender" required><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option></select></div>
           </div>
@@ -338,6 +377,7 @@
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" onclick="openLarvaModal()">➕ เพิ่มการสำรวจ</button>
             <button type="button" class="btn-warn" onclick="printLarvalReport('vhv')">🖨️ แบบสำรวจ (A4)</button>
+            <button type="button" class="btn-outline" onclick="openHouseMap('vhv')">🗺️ แผนที่บ้าน</button>
           </div>
         </div>
         <div class="form-row" style="margin-bottom:10px;">
@@ -357,6 +397,7 @@
             <button type="button" class="btn-outline" onclick="toggleAddVillage(false)">ยกเลิก</button>
           </div>
         </div>
+        <div id="vhv-larva-progress"></div>
         <div class="dashboard-cards" id="vhv-larva-cards"></div>
         <div class="table-responsive">
           <table>
@@ -374,6 +415,7 @@
             <div class="form-group" style="display:flex; align-items:flex-end; gap:8px;">
               <button type="button" onclick="buildMonthlyReport()">🔄 สร้าง</button>
               <button type="button" class="btn-warn" onclick="window.print()">🖨️ พิมพ์ / PDF</button>
+              <button type="button" class="btn-success" onclick="exportExcel('vhv')">📥 ส่งออก Excel</button>
             </div>
           </div>
         </div>
@@ -610,28 +652,22 @@
   function maskCitizenId(cid) { const s = String(cid || '').trim(); return s || '-'; }
 
   /* ========== 🔧 แปลงวันเกิดจากหลายรูปแบบ ========== */
+  // แปลงวันที่ทุกรูปแบบ (dd/mm/yyyy, ISO จาก Google Sheets, "Mon Nov 24 2492 ...") → dd/mm/พ.ศ. ตามเวลาไทย
+  function toThaiDateStr(v) {
+    if (v === null || v === undefined) return '';
+    const s = String(v).trim(); if (!s || s === '-') return s;
+    let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) { let y = parseInt(m[3]); if (y < 2400) y += 543; return `${m[1].padStart(2,'0')}/${m[2].padStart(2,'0')}/${y}`; }
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    const t = new Date(d.getTime() + 7 * 3600000);            // เวลาไทย (UTC+7)
+    let y = t.getUTCFullYear(); if (y < 2400) y += 543;
+    return `${String(t.getUTCDate()).padStart(2,'0')}/${String(t.getUTCMonth() + 1).padStart(2,'0')}/${y}`;
+  }
   function parseDobToParts(dobStr) {
-    if (!dobStr) return null;
-    const s = String(dobStr).trim();
-    // 1) DD/MM/YYYY
-    if (s.includes('/')) {
-      const p = s.split('/');
-      if (p.length === 3) return { day: String(p[0]).padStart(2,'0'), month: String(p[1]).padStart(2,'0'), year: String(p[2]) };
-    }
-    // 2) ISO YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-      const p = s.split('T')[0].split('-');
-      const y = parseInt(p[0]);
-      return { day: p[2], month: p[1], year: String(y > 2400 ? y : y + 543) };
-    }
-    // 3) "Sat Mar 15 2500 ..." (Google Sheets Date)
-    const m = s.match(/(\w{3})\s+(\d{1,2})\s+(\d{4})/);
-    if (m) {
-      const monthMap = { Jan:'01', Feb:'02', Mar:'03', Apr:'04', May:'05', Jun:'06', Jul:'07', Aug:'08', Sep:'09', Oct:'10', Nov:'11', Dec:'12' };
-      const y = parseInt(m[3]);
-      return { day: String(m[2]).padStart(2,'0'), month: monthMap[m[1]] || '01', year: String(y > 2400 ? y : y + 543) };
-    }
-    return null;
+    const th = toThaiDateStr(dobStr);
+    const m = String(th || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? { day: m[1], month: m[2], year: m[3] } : null;
   }
 
   /* ========== fetch with timeout ========== */
@@ -1015,11 +1051,12 @@
     overdue.forEach(t => html += buildCard(t, true));
     upcoming.forEach(t => html += buildCard(t, false));
     container.innerHTML = html;
+    try { renderApptPanel('vhv-appt-panel', myResidents, false); renderVHVDQ(); } catch (e) { console.warn(e); }
   }
 
   /* ========== Tabs ========== */
   function switchAdminTab(tab) {
-    ['doc','vhv','allres','larva','settings'].forEach(t => {
+    ['doc','vhv','allres','larva','dq','settings'].forEach(t => {
       const p = document.getElementById('tab-' + t); const b = document.getElementById('tab-btn-' + t);
       if (p) p.classList.add('hidden'); if (b) b.classList.remove('active-tab');
     });
@@ -1028,6 +1065,7 @@
     if (tab === 'allres') renderAdminAllResidents();
     if (tab === 'larva') renderAdminLarva();
     if (tab === 'settings') fillSettingsForm();
+    if (tab === 'dq') renderAdminDQ();
   }
   function switchVHVTab(tab) {
     ['vtask','vlarva','vreport'].forEach(t => {
@@ -1062,6 +1100,7 @@
   }
 
   function renderDoctorDashboard() {
+    try { renderApptPanel('admin-appt-panel', dbResidents, true); renderAdminDQ(); } catch (e) { console.warn(e); }
     const tbody = document.getElementById('doctor-table-body'); tbody.innerHTML = '';
     const filterTriage = document.getElementById('filter-triage').value;
     const searchTxt = document.getElementById('search-doctor').value.toLowerCase();
@@ -1362,6 +1401,7 @@
   function clearResForm() {
     document.getElementById('resident-form').reset();
     const i = document.getElementById('res-citizen-id'); i.readOnly = false; delete i.dataset.realCid;
+    { const h = document.getElementById('cid-dup-hint'); if (h) h.textContent = ''; }
     const cEl = document.getElementById('res-coords'); cEl.value = ''; delete cEl.dataset.forHouse;
     const hint = document.getElementById('coords-hint'); if (hint) { hint.textContent = ''; hint.style.color = 'var(--text-muted)'; }
   }
@@ -1374,6 +1414,7 @@
     const apptIso = document.getElementById('res-hosp-appt').value;
     const ci = document.getElementById('res-citizen-id');
     const realCid = ci.dataset.realCid || ci.value;
+    if (!validateResidentBeforeSave(realCid, !ci.dataset.realCid)) return;
     const data = {
       action: 'save_resident', citizen_id: realCid, name: document.getElementById('res-name').value,
       gender: document.getElementById('res-gender').value, dob: `${d}/${m}/${y}`, age: document.getElementById('res-age').value,
@@ -1415,6 +1456,7 @@
     const r = dbResidents.find(x => x.citizen_id === cid); if (!r) return;
     const ci = document.getElementById('res-citizen-id');
     ci.value = r.citizen_id; ci.dataset.realCid = r.citizen_id; ci.readOnly = true;
+    { const h = document.getElementById('cid-dup-hint'); if (h) h.textContent = ''; }
     document.getElementById('res-name').value = r.name;
     document.getElementById('res-house').value = r.house_no;
     document.getElementById('res-moo').value = r.moo;
@@ -1694,6 +1736,7 @@
 
   function renderVHVLarva() {
     renderVillageSelect();
+    try { renderLarvaProgress(); } catch (e) { console.warn(e); }
     const mk = document.getElementById('vhv-larva-month').value;
     const filtered = filterLarvalByMonth(dbLarval.filter(r => r.vhv_id === currentUser.id), mk);
     const s = larvaSummaryOf(filtered);
@@ -2231,6 +2274,280 @@ ${pagesHtml}
 <div><p style="margin-bottom:40px;">ลงชื่อ ....................................................</p><p style="margin:0;">(................................................)<br>เจ้าหน้าที่ ${esc(appSettings.hosp_name || 'รพ.สต.')}</p></div>
 </div>`;
     document.getElementById('report-print').innerHTML = html;
+  }
+
+  /* ==================================================================
+     ส่วนเสริม: ความคืบหน้าลูกน้ำ • นัด รพ. • แผนที่ • ตรวจข้อมูล • Excel
+     ================================================================== */
+  function loadScriptOnce(url) {
+    window.__loaded = window.__loaded || {};
+    if (window.__loaded[url]) return window.__loaded[url];
+    window.__loaded[url] = new Promise((ok, bad) => {
+      const el = document.createElement('script'); el.src = url; el.onload = ok;
+      el.onerror = () => { delete window.__loaded[url]; bad(new Error('load fail')); };
+      document.head.appendChild(el);
+    });
+    return window.__loaded[url];
+  }
+  function loadCssOnce(url) { if (document.querySelector(`link[href="${url}"]`)) return; const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = url; document.head.appendChild(l); }
+  function parseCoords(v) {
+    const m = String(v || '').match(/(-?\d{1,3}\.\d+)\s*[, ]\s*(-?\d{1,3}\.\d+)/);
+    if (!m) return null;
+    const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+    return (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) ? [lat, lng] : null;
+  }
+  function houseKeyOf(r) { return normMoo(r.moo) + '|' + String(r.house_no || '').trim(); }
+  function housesOf(residents) {
+    const h = {};
+    residents.forEach(r => {
+      if (!String(r.house_no || '').trim()) return;
+      const k = houseKeyOf(r);
+      if (!h[k]) h[k] = { key: k, moo: normMoo(r.moo), house_no: String(r.house_no).trim(), members: [], head: null, coords: null, owner: r.owner };
+      h[k].members.push(r);
+      if (r.role_in_house === 'เจ้าบ้าน' && !h[k].head) h[k].head = r;
+      if (!h[k].coords) h[k].coords = parseCoords(r.coords);
+    });
+    return Object.values(h).map(x => { x.head = x.head || x.members[0]; return x; })
+      .sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no));
+  }
+  function larvaStatusByHouse(mk, records) {
+    const latest = {};
+    records.filter(r => monthKeyOf(r.date) === mk).forEach(r => {
+      const k = houseKeyOf(r); const t = (parseAnyDate(r.date) || new Date(0)).getTime();
+      if (!latest[k] || t >= latest[k].t) latest[k] = { t, rec: r };
+    });
+    const out = {}; Object.keys(latest).forEach(k => { out[k] = larvaRecordStats(latest[k].rec).posC > 0 ? 'pos' : 'ok'; });
+    return out;
+  }
+
+  /* ---------- 3) ความคืบหน้าสำรวจลูกน้ำเดือนนี้ ---------- */
+  function renderLarvaProgress() {
+    const box = document.getElementById('vhv-larva-progress'); if (!box || !currentUser) return;
+    const mk = document.getElementById('vhv-larva-month').value || todayISO().slice(0, 7);
+    const houses = housesOf(dbResidents.filter(r => r.owner === currentUser.id));
+    if (!houses.length) { box.innerHTML = ''; return; }
+    const st = larvaStatusByHouse(mk, dbLarval);
+    const done = houses.filter(h => st[h.key]);
+    const todo = houses.filter(h => !st[h.key]);
+    const pct = Math.round(done.length / houses.length * 100);
+    const multiMoo = new Set(houses.map(h => h.moo)).size > 1;
+    const label = h => `บ้าน ${esc(h.house_no)}${multiMoo ? ' ม.' + esc(h.moo) : ''}`;
+    box.innerHTML = `<div class="prog-wrap">
+      <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-weight:700;">
+        <span>📊 ความคืบหน้าเดือน ${esc(thaiMonthLabel(mk))}</span>
+        <span style="color:${pct === 100 ? 'var(--success)' : 'var(--primary)'};">สำรวจแล้ว ${done.length} / ${houses.length} หลัง (${pct}%)</span>
+      </div>
+      <div class="prog-bar"><div style="width:${pct}%"></div></div>
+      ${todo.length ? `<div style="font-size:14px; color:#7a5200; font-weight:600;">⏳ ยังไม่ได้สำรวจ ${todo.length} หลัง — กดที่บ้านเพื่อบันทึก</div>
+      <div class="chip-row">${todo.map(h => `<button type="button" class="chip" onclick="openLarvaForHouse('${esc(h.key)}')">🏠 ${label(h)}</button>`).join('')}</div>`
+      : `<div style="color:var(--success); font-weight:700;">🎉 สำรวจครบทุกหลังแล้ว</div>`}
+    </div>`;
+  }
+  function openLarvaForHouse(key) {
+    openLarvaModal();
+    const sel = document.getElementById('larva-house');
+    const opt = [...sel.options].find(o => { if (!o.value) return false; const [m, h] = o.value.split('|'); return normMoo(m) + '|' + String(h).trim() === key; });
+    if (opt) { sel.value = opt.value; checkLarvaDuplicate(true); }
+  }
+
+  /* ---------- 4) นัด รพ. ใกล้ถึง ---------- */
+  function renderApptPanel(elId, residents, showVhv) {
+    const el = document.getElementById(elId); if (!el) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const items = [];
+    residents.forEach(r => {
+      if (!r.hosp_appt || r.hosp_appt === '-') return;
+      const d = parseAnyDate(r.hosp_appt); if (!d) return;
+      d.setHours(0, 0, 0, 0);
+      const diff = Math.round((d - today) / 86400000);
+      if (diff >= -1 && diff <= 7) items.push({ r, d, diff });
+    });
+    items.sort((a, b) => a.d - b.d);
+    if (!items.length) { el.innerHTML = ''; return; }
+    const card = t => {
+      const when = t.diff < 0 ? '⌛ เมื่อวาน' : t.diff === 0 ? '🔔 วันนี้!' : t.diff === 1 ? '🔔 พรุ่งนี้' : `ในอีก ${t.diff} วัน`;
+      const call = t.r.phone ? `<a class="btn-call btn-small" href="tel:${esc(String(t.r.phone).replace(/[^\d+]/g, ''))}">📞 โทรเตือน</a>` : '';
+      const vhv = showVhv ? `<br><small style="color:var(--primary); font-weight:700;">อสม.: ${esc((dbVHV.find(u => u.vhv_id === t.r.owner) || {}).name || '-')}</small>` : '';
+      return `<div class="appt-card" style="border-left-color:${t.diff <= 1 ? '#dc3545' : '#0d6efd'};">
+        <div style="font-weight:700; color:${t.diff <= 1 ? '#dc3545' : '#0d6efd'}; font-size:13px;">🏥 นัด รพ. ${when} • ${esc(formatCleanDate(t.r.hosp_appt))}</div>
+        <div style="font-size:16px; font-weight:700;">${esc(t.r.name)}</div>
+        <div style="font-size:14px; color:var(--text-muted);">🏠 บ.${esc(t.r.house_no)} ม.${esc(t.r.moo)}${t.r.meds ? ' • 💊 ' + esc(t.r.meds) : ''}${vhv}</div>
+        ${call ? `<div style="margin-top:6px;">${call}</div>` : ''}
+      </div>`;
+    };
+    el.innerHTML = `<h4 style="margin:16px 0 10px; font-size:17px;">🏥 นัดโรงพยาบาลใน 7 วัน <span style="font-size:13px; color:var(--text-muted); font-weight:400;">(${items.length} คน — ช่วยเตือน/พาไปตามนัด)</span></h4>` + items.map(card).join('');
+  }
+
+  /* ---------- 5) แผนที่บ้าน ---------- */
+  let houseMap = null;
+  async function openHouseMap(mode) {
+    const isVHV = mode === 'vhv';
+    const residents = isVHV ? dbResidents.filter(r => r.owner === currentUser.id) : dbResidents;
+    const mEl = document.getElementById(isVHV ? 'vhv-larva-month' : 'admin-larva-month');
+    const mk = (mEl && mEl.value) || todayISO().slice(0, 7);
+    const houses = housesOf(residents);
+    const st = larvaStatusByHouse(mk, dbLarval);
+    const withC = houses.filter(h => h.coords);
+    document.getElementById('map-title').textContent = `• ลูกน้ำเดือน ${thaiMonthLabel(mk)} • ${withC.length} หลัง`;
+    document.getElementById('map-nocoord').textContent = houses.length - withC.length ? `(ไม่มีพิกัด ${houses.length - withC.length} หลัง)` : '';
+    document.getElementById('map-modal').classList.remove('hidden');
+    if (!withC.length) { document.getElementById('map-box').innerHTML = '<p style="padding:20px; text-align:center; color:var(--text-muted);">ยังไม่มีบ้านที่บันทึกพิกัด GPS</p>'; return; }
+    try {
+      loadCssOnce('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css');
+      await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js');
+    } catch (e) { document.getElementById('map-box').innerHTML = '<p style="padding:20px; text-align:center; color:var(--danger);">📶 ต้องต่ออินเทอร์เน็ตเพื่อเปิดแผนที่</p>'; return; }
+    if (houseMap) { houseMap.remove(); houseMap = null; }
+    document.getElementById('map-box').innerHTML = '';
+    houseMap = L.map('map-box');
+    // OpenStreetMap บล็อกการใช้งานจากแอปแบบนี้ (403) → ใช้ CARTO (แผนที่) + Esri (ดาวเทียม) แทน ไม่ต้องใช้ API key
+    const street = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 20, subdomains: 'abcd', attribution: '© OpenStreetMap © CARTO' });
+    const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '© Esri' });
+    const satLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', { maxZoom: 20, subdomains: 'abcd' });
+    const satGroup = L.layerGroup([sat, satLabels]);
+    street.addTo(houseMap);
+    L.control.layers({ '🗺️ แผนที่': street, '🛰️ ดาวเทียม': satGroup }, null, { collapsed: false, position: 'topright' }).addTo(houseMap);
+    // ถ้าแผนที่ถนนโหลดไม่ได้ สลับไปดาวเทียมให้อัตโนมัติ
+    let tileErr = 0, switched = false;
+    street.on('tileerror', () => { if (++tileErr >= 4 && !switched) { switched = true; houseMap.removeLayer(street); satGroup.addTo(houseMap); toast('สลับเป็นแผนที่ดาวเทียม', 'warn'); } });
+    const bounds = [];
+    withC.forEach(h => {
+      const s = st[h.key];
+      const color = s === 'pos' ? '#dc3545' : s === 'ok' ? '#28a745' : '#9aa0a6';
+      const vhv = (dbVHV.find(u => u.vhv_id === h.owner) || {}).name || '';
+      const stTxt = s === 'pos' ? '🔴 พบลูกน้ำ' : s === 'ok' ? '🟢 ปลอดลูกน้ำ' : '⚪ ยังไม่สำรวจ';
+      L.circleMarker(h.coords, { radius: 9, color: '#fff', weight: 2, fillColor: color, fillOpacity: .95 }).addTo(houseMap)
+        .bindPopup(`<b>🏠 บ้าน ${esc(h.house_no)} หมู่ ${esc(h.moo)}</b><br>${esc(h.head.name)} (${h.members.length} คน)<br>${stTxt}${!isVHV && vhv ? '<br>อสม.: ' + esc(vhv) : ''}<br><a href="https://maps.google.com/?q=${h.coords.join(',')}" target="_blank">🧭 นำทาง</a>`);
+      bounds.push(h.coords);
+    });
+    setTimeout(() => { houseMap.invalidateSize(); houseMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 18 }); }, 80);
+  }
+  function closeHouseMap() { document.getElementById('map-modal').classList.add('hidden'); }
+
+  /* ---------- 6) ตรวจความถูกต้องของข้อมูล ---------- */
+  function cidChecksumOk(cid) {
+    const s = String(cid || '').replace(/\D/g, '');
+    if (s.length !== 13) return false;
+    let sum = 0; for (let i = 0; i < 12; i++) sum += parseInt(s[i]) * (13 - i);
+    return (11 - (sum % 11)) % 10 === parseInt(s[12]);
+  }
+  function genderFromPrefix(name) {
+    const n = String(name || '').replace(/[​-‍﻿]/g, '').replace(/\s+/g, '').trim();
+    if (/^(นาย|ด\.?ช\.?|เด็กชาย)/.test(n)) return 'ชาย';
+    if (/^(นางสาว|น\.?ส\.?|นาง|ด\.?ญ\.?|เด็กหญิง)/.test(n)) return 'หญิง';
+    return null;
+  }
+  function residentIssues(r, dupSet) {
+    const out = []; const cid = String(r.citizen_id || '').trim();
+    if (dupSet && dupSet.has(cid)) out.push('เลขบัตรซ้ำกับคนอื่น');
+    const g = genderFromPrefix(r.name);
+    if (g && r.gender && g !== r.gender) out.push(`คำนำหน้าเป็น${g} แต่เพศเป็น${r.gender}`);
+    if (/[​-‍﻿]/.test(String(r.name || ''))) out.push('ชื่อมีอักขระซ่อนปน');
+    if (String(r.coords || '').trim() && !parseCoords(r.coords)) out.push(`พิกัดไม่ถูกต้อง ("${String(r.coords).slice(0, 20)}")`);
+    if (!String(r.house_no || '').trim() || !String(r.moo || '').trim()) out.push('ไม่มีบ้านเลขที่/หมู่');
+    if (!r.dob) out.push('ไม่มีวันเกิด');
+    return out;
+  }
+  function collectIssues(residents) {
+    const cnt = {}; dbResidents.forEach(r => { const c = String(r.citizen_id || '').trim(); if (c) cnt[c] = (cnt[c] || 0) + 1; });
+    const dup = new Set(Object.keys(cnt).filter(c => cnt[c] > 1));
+    return residents.map(r => ({ r, issues: residentIssues(r, dup) })).filter(x => x.issues.length)
+      .sort((a, b) => cmpNum(a.r.moo, b.r.moo) || cmpNum(a.r.house_no, b.r.house_no));
+  }
+  function renderVHVDQ() {
+    const el = document.getElementById('vhv-dq-panel'); if (!el || !currentUser) return;
+    const list = collectIssues(dbResidents.filter(r => r.owner === currentUser.id));
+    if (!list.length) { el.innerHTML = ''; return; }
+    el.innerHTML = `<details class="white-panel" style="box-shadow:none; border:1px solid #f5c2c7; background:#fff8f8;">
+      <summary style="cursor:pointer; font-weight:700; font-size:16px; color:#a71d2a;">🧹 ข้อมูลที่ควรแก้ (${list.length} คน) — กดเพื่อดู</summary>
+      <div style="margin-top:8px;">${list.map(x => `<div class="dq-item"><div><strong>${esc(x.r.name || '-')}</strong> <small style="color:var(--text-muted);">บ.${esc(x.r.house_no || '-')} ม.${esc(x.r.moo || '-')}</small><br>${x.issues.map(i => `<span class="dq-tag">${esc(i)}</span>`).join('')}</div>
+        <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(x.r.citizen_id)}'); document.getElementById('resident-form').scrollIntoView({behavior:'smooth'});">📝 แก้</button></div>`).join('')}</div>
+    </details>`;
+  }
+  function renderAdminDQ() {
+    const list = collectIssues(dbResidents);
+    const badge = document.getElementById('dq-badge');
+    if (badge) { badge.textContent = list.length; badge.classList.toggle('hidden', !list.length); }
+    const el = document.getElementById('admin-dq-list'); if (!el) return;
+    if (!list.length) { el.innerHTML = '<div style="padding:20px; background:#e8f5e9; border:1px dashed #28a745; color:#155724; border-radius:8px; text-align:center;">🎉 ไม่พบข้อมูลผิดพลาด</div>'; return; }
+    const byVhv = {}; list.forEach(x => { (byVhv[x.r.owner] = byVhv[x.r.owner] || []).push(x); });
+    el.innerHTML = Object.keys(byVhv).map(id => `<div class="white-panel" style="box-shadow:none; border:1px solid var(--border-color); padding:12px 15px;">
+      <div style="font-weight:700; color:var(--primary); margin-bottom:4px;">👤 อสม. ${esc((dbVHV.find(u => u.vhv_id === id) || {}).name || id || 'ไม่ระบุ')} — ${byVhv[id].length} คน</div>
+      ${byVhv[id].map(x => `<div class="dq-item"><div><strong>${esc(x.r.name || '-')}</strong> <small style="color:var(--text-muted);">${esc(x.r.citizen_id || '')} • บ.${esc(x.r.house_no || '-')} ม.${esc(x.r.moo || '-')}</small><br>${x.issues.map(i => `<span class="dq-tag">${esc(i)}</span>`).join('')}</div></div>`).join('')}
+    </div>`).join('');
+  }
+  function checkCidDupLive() {
+    const el = document.getElementById('res-citizen-id'), hint = document.getElementById('cid-dup-hint');
+    if (!el || !hint) return;
+    const v = el.value.trim();
+    const dup = (!el.dataset.realCid && v) ? dbResidents.find(r => String(r.citizen_id || '').trim() === v) : null;
+    hint.textContent = dup ? `⛔ เลขบัตรซ้ำ: ${dup.name || '-'} (บ.${dup.house_no || '-'} ม.${dup.moo || '-'})` : '';
+  }
+  // ตรวจก่อนบันทึกลูกบ้าน (คืน false = ยกเลิกการบันทึก)
+  function validateResidentBeforeSave(cid, isNew) {
+    const coords = document.getElementById('res-coords').value.trim();
+    if (coords && !parseCoords(coords)) { alert('📍 พิกัด GPS ยังไม่สมบูรณ์ ("' + coords + '")\nกรุณากด "ดึงพิกัดใหม่" อีกครั้ง หรือ "ล้างพิกัด" ก่อนบันทึก'); return false; }
+    const warns = [];
+    const cidT = String(cid || '').trim();
+    if (isNew && cidT) {
+      const dup = dbResidents.find(r => String(r.citizen_id || '').trim() === cidT);
+      if (dup) {
+        const who = (dbVHV.find(u => u.vhv_id === dup.owner) || {}).name || dup.owner || '-';
+        if (!confirm(`⛔ เลขบัตรประชาชนซ้ำ!\n\n${cidT} มีในระบบแล้ว เป็นของ:\n• ${dup.name || '-'}\n• บ้าน ${dup.house_no || '-'} หมู่ ${dup.moo || '-'}\n• อสม.ผู้ดูแล: ${who}\n\nถ้าบันทึกต่อ จะทับข้อมูลเดิมของคนนี้\nกด OK = บันทึกทับ / Cancel = กลับไปแก้`)) {
+          document.getElementById('res-citizen-id').focus(); return false;
+        }
+      }
+    }
+    const name = document.getElementById('res-name').value, gender = document.getElementById('res-gender').value;
+    const g = genderFromPrefix(name);
+    if (g && g !== gender) warns.push(`• คำนำหน้าชื่อเป็น "${g}" แต่เลือกเพศ "${gender}"`);
+    if (/[​-‍﻿]/.test(name)) document.getElementById('res-name').value = name.replace(/[​-‍﻿]/g, '');
+    if (warns.length) return confirm('⚠️ ตรวจพบข้อมูลที่อาจผิด:\n\n' + warns.join('\n') + '\n\nกด OK = บันทึกต่อ / Cancel = กลับไปแก้');
+    return true;
+  }
+
+  /* ---------- 7) ส่งออก Excel ---------- */
+  async function exportExcel(mode) {
+    const isVHV = mode === 'vhv';
+    try { showLoader(); await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
+    catch (e) { hideLoader(); alert('📶 ต้องต่ออินเทอร์เน็ตเพื่อส่งออก Excel'); return; }
+    hideLoader();
+    const res = isVHV ? dbResidents.filter(r => r.owner === currentUser.id) : dbResidents;
+    const ids = new Set(res.map(r => r.citizen_id));
+    const visits = dbVisits.filter(v => ids.has(v.citizen_id));
+    const larva = isVHV ? dbLarval.filter(r => r.vhv_id === currentUser.id) : dbLarval;
+    const vName = id => (dbVHV.find(u => u.vhv_id === id) || {}).name || id || '';
+    const rByCid = {}; dbResidents.forEach(r => rByCid[r.citizen_id] = r);
+
+    const sheet1 = res.slice().sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no)).map(r => ({
+      'เลขบัตรประชาชน': String(r.citizen_id || ''), 'ชื่อ-นามสกุล': r.name, 'เพศ': r.gender, 'วันเกิด': toThaiDateStr(r.dob), 'อายุ': r.age,
+      'บ้านเลขที่': r.house_no, 'หมู่': r.moo, 'สถานะในบ้าน': r.role_in_house, 'เบอร์โทร': r.phone, 'กลุ่มการดูแล': r.group,
+      'โรคประจำตัว': r.disease, 'ยาประจำ': r.meds, 'นัด รพ.': toThaiDateStr(r.hosp_appt), 'อสม.ผู้ดูแล': vName(r.owner), 'พิกัด GPS': r.coords }));
+    const sheet2 = visits.map(v => { const r = rByCid[v.citizen_id] || {}; return {
+      'วันที่เยี่ยม': toThaiDateStr(v.date), 'เลขบัตรประชาชน': String(v.citizen_id || ''), 'ชื่อ-นามสกุล': r.name || '', 'บ้านเลขที่': r.house_no || '', 'หมู่': r.moo || '',
+      'ระดับ': v.triage, 'ความดัน (BP)': v.bp, 'น้ำตาล (DTX)': v.dtx, 'ADL': v.adl, 'กินยา': v.meds_taken, 'อาการ/ประเมิน': v.symptoms, 'นัดครั้งถัดไป': toThaiDateStr(v.next_appt), 'อสม.': vName(r.owner) }; });
+    const sheet3 = larva.map(r => { const st = larvaRecordStats(r); const o = { 'เดือน': thaiMonthLabel(monthKeyOf(r.date)), 'วันที่สำรวจ': toThaiDateStr(r.date), 'บ้านเลขที่': r.house_no, 'หมู่': r.moo, 'อสม.': r.vhv_name || vName(r.vhv_id) };
+      LARVA_TYPES.forEach(t => { o[t.col + ' (สำรวจ)'] = num(r[t.key + '_total']); o[t.col + ' (พบ)'] = num(r[t.key + '_pos']); });
+      o['รวมภาชนะ'] = st.totalC; o['รวมพบ'] = st.posC; o['ผล'] = st.posC > 0 ? 'พบลูกน้ำ' : 'ปลอด'; o['หมายเหตุ'] = r.note || ''; return o; });
+    // สรุปรายเดือน/รายหมู่ (ใช้ผลล่าสุดของแต่ละบ้านในเดือน)
+    const grp = {};
+    larva.forEach(r => { const k = monthKeyOf(r.date) + '|' + normMoo(r.moo); (grp[k] = grp[k] || []).push(r); });
+    const sheet4 = Object.keys(grp).sort().map(k => {
+      const latest = {}; grp[k].forEach(r => { const hk = houseKeyOf(r); const t = (parseAnyDate(r.date) || new Date(0)).getTime(); if (!latest[hk] || t >= latest[hk].t) latest[hk] = { t, r }; });
+      const s = larvaSummaryOf(Object.values(latest).map(x => x.r)); const [mk, moo] = k.split('|');
+      return { 'เดือน': thaiMonthLabel(mk), 'หมู่': moo, 'บ้านที่สำรวจ': s.houseCount, 'บ้านที่พบ': s.posHouses, 'ภาชนะทั้งหมด': s.totalC, 'ภาชนะที่พบ': s.posC,
+        'HI (%)': +s.HI.toFixed(2), 'BI': +s.BI.toFixed(2), 'CI (%)': +s.CI.toFixed(2), 'ผลประเมิน': (s.HI < 10 && s.CI < 5 && s.BI < 50) ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์' };
+    });
+    const wb = XLSX.utils.book_new();
+    const add = (rows, name) => {
+      const ws = rows.length ? XLSX.utils.json_to_sheet(rows) : XLSX.utils.aoa_to_sheet([['ไม่มีข้อมูล']]);
+      if (rows.length) ws['!cols'] = Object.keys(rows[0]).map(h => ({ wch: Math.min(40, Math.max(h.length + 2, ...rows.map(r => String(r[h] == null ? '' : r[h]).length + 1))) }));
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    };
+    add(sheet1, 'ลูกบ้าน'); add(sheet2, 'ประวัติเยี่ยม'); add(sheet3, 'ลูกน้ำรายบ้าน'); add(sheet4, 'สรุปลูกน้ำรายเดือน');
+    const d = todayISO().split('-'); const stamp = `${d[2]}-${d[1]}-${parseInt(d[0]) + 543}`;
+    const who = isVHV ? (currentUser.name || currentUser.id) : 'ทั้งตำบล';
+    XLSX.writeFile(wb, `ข้อมูล อสม ${who} ${stamp}.xlsx`);
+    toast('📥 ส่งออก Excel แล้ว', 'ok');
   }
 </script>
 </body>
