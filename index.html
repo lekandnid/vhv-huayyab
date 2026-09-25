@@ -81,6 +81,7 @@
   .cid-eye { padding:2px 8px !important; margin-left:4px; font-size:15px; }
   @media print { body * { visibility:hidden !important; } #report-print, #report-print * { visibility:visible !important; } #report-print { display:block !important; position:absolute; left:0; top:0; width:100%; border:none; box-shadow:none; padding:0; } .no-print { display:none !important; } }
   @media (max-width:600px) { .header-bar { flex-direction:column; align-items:flex-start; } .stat-card h2 { font-size:1.7em; } }
+  .cid-line { font-family:monospace; font-size:13px; color:#334; letter-spacing:.3px; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -173,7 +174,6 @@
 
       <div id="tab-allres" class="white-panel hidden" style="border-top-left-radius:0;">
         <h4 style="margin-bottom:15px; font-size:18px;">ฐานข้อมูลลูกบ้านทั้งหมด</h4>
-        <p style="color:var(--text-muted); font-size:13px; margin-top:-10px;">🔒 เลขบัตรถูกซ่อน — กดปุ่ม 👁️ เพื่อดูชั่วคราว (บันทึก log)</p>
         <input type="text" id="search-all-res" class="search-box" placeholder="🔍 ค้นหา (เลขบัตร, ชื่อ, บ้านเลขที่)..." onkeyup="renderAdminAllResidents()">
         <div class="table-responsive">
           <table>
@@ -606,7 +606,8 @@
   }
   function cmpNum(a, b) { return String(a || "").localeCompare(String(b || ""), 'th', { numeric: true }); }
   function esc(s) { if (s === null || s === undefined) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function maskCitizenId(cid) { const s = String(cid || '').trim(); if (!s) return '-'; if (s.length <= 4) return s; return '•'.repeat(s.length - 4) + s.slice(-4); }
+  // แสดงเลขบัตรประชาชนเต็ม 13 หลัก (ไม่ซ่อนแล้ว)
+  function maskCitizenId(cid) { const s = String(cid || '').trim(); return s || '-'; }
 
   /* ========== 🔧 แปลงวันเกิดจากหลายรูปแบบ ========== */
   function parseDobToParts(dobStr) {
@@ -654,6 +655,9 @@
   /* ========== Offline queue ========== */
   function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch (e) { return []; } }
   function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); updateSyncBadge(); }
+  (function purgeStuckQueue() {
+    try { const q = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); const k = q.filter(it => !(it.data && it.data.action === 'save_settings' && it.data._actor && it.data._actor.role === 'vhv')); if (k.length !== q.length) localStorage.setItem(QUEUE_KEY, JSON.stringify(k)); } catch (e) {}
+  })();
   function enqueue(data) { const q = getQueue(); q.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2), data: data, ts: Date.now() }); setQueue(q); }
   function updateSyncBadge() {
     const el = document.getElementById('sync-badge'); if (!el) return;
@@ -749,13 +753,13 @@
         if (!k || k === 'admin_pass') return;
         const v = (row.value !== undefined) ? row.value : row.Value;
         const asNum = Number(v);
-        appSettings[k] = (v !== '' && v !== null && !isNaN(asNum)) ? asNum : v;
+        appSettings[k] = (String(k).startsWith('village_') || v === '' || v === null || isNaN(asNum)) ? v : asNum;
       });
     } else if (s && typeof s === 'object') {
       Object.keys(s).forEach(k => {
         if (k === 'admin_pass') return;
         const v = s[k]; const asNum = Number(v);
-        appSettings[k] = (v !== '' && v !== null && !isNaN(asNum)) ? asNum : v;
+        appSettings[k] = (String(k).startsWith('village_') || v === '' || v === null || isNaN(asNum)) ? v : asNum;
       });
     }
     fillSettingsForm();
@@ -849,6 +853,7 @@
       document.getElementById('vhv-view').classList.remove('hidden');
       switchVHVTab('vtask');
       renderVHVTasks(); renderResidents();
+      loadVillagesFromServer();
     }
     updateSyncBadge();
   }
@@ -1115,14 +1120,9 @@
       const dis = r.disease && r.disease !== '-' ? `<br><small style="color:var(--danger);">โรค: ${esc(r.disease)}</small>` : '';
       const meds = r.meds ? `<small>💊 ${esc(r.meds)}</small><br>` : '';
       const appt = r.hosp_appt ? `<small>🏥 นัด: ${esc(formatCleanDate(r.hosp_appt))}</small>` : `<small style="color:#aaa;">ไม่มีข้อมูลยา/นัด</small>`;
-      const revealed = cidRevealSet.has(r.citizen_id);
-      let cidDisp;
-      if (revealed) cidDisp = esc(cidRevealCache[r.citizen_id] || r.citizen_id || '-');
-      else { const s = cidRevealCache[r.citizen_id] || r.citizen_id || ''; cidDisp = esc(maskCitizenId(s)); }
-      const eye = revealed ? '🙈' : '👁️';
-      const btn = `<button type="button" class="btn-outline btn-small cid-eye" onclick="toggleRevealCid('${esc(r.citizen_id)}')" title="${revealed ? 'ซ่อน' : 'ดูเต็ม (มี log)'}">${eye}</button>`;
+      const cidDisp = esc(r.citizen_id || '-');
       tbody.innerHTML += `<tr>
-        <td class="cid-cell">${cidDisp}${btn}</td>
+        <td class="cid-cell" style="white-space:nowrap; font-family:monospace; font-size:14px;">${cidDisp}</td>
         <td>บ.${esc(r.house_no)} ม.${esc(r.moo)}</td>
         <td><strong>${esc(r.name)}</strong>${dis}</td>
         <td style="color:var(--primary); font-weight:bold;">${esc(vhvName)}</td>
@@ -1414,7 +1414,7 @@
   function editResident(cid) {
     const r = dbResidents.find(x => x.citizen_id === cid); if (!r) return;
     const ci = document.getElementById('res-citizen-id');
-    ci.value = maskCitizenId(r.citizen_id); ci.dataset.realCid = r.citizen_id; ci.readOnly = true;
+    ci.value = r.citizen_id; ci.dataset.realCid = r.citizen_id; ci.readOnly = true;
     document.getElementById('res-name').value = r.name;
     document.getElementById('res-house').value = r.house_no;
     document.getElementById('res-moo').value = r.moo;
@@ -1471,7 +1471,7 @@
         tbody.innerHTML += `<tr>
           <td style="font-weight:bold; color:var(--primary);">${esc(i.house_no || '-')}</td>
           <td>ม.${esc(i.moo || '-')}</td>
-          <td><strong>${esc(i.name)}</strong> ${head}</td>
+          <td><strong>${esc(i.name)}</strong> ${head}<br><small class="cid-line">🪪 ${esc(i.citizen_id || '-')}</small></td>
           <td>${esc(i.gender || '-')}</td>
           <td>${esc(i.age)}</td>
           <td>${esc(i.group)} ${dis}</td>
@@ -1498,6 +1498,7 @@
         const dis = m.disease && m.disease !== '-' ? `<small style="color:var(--danger);"> • ${esc(m.disease)}</small>` : '';
         return `<div class="member-row">
           <div><strong>${esc(m.name)}</strong>${m.role_in_house === 'เจ้าบ้าน' ? ' <span class="badge-head">เจ้าบ้าน</span>' : ''}<br>
+          <small class="cid-line">🪪 ${esc(m.citizen_id || '-')}</small><br>
           <small style="color:var(--text-muted);">${esc(m.gender)} • ${esc(m.age)} ปี • ${esc(m.group)}</small>${dis}</div>
           <div style="white-space:nowrap;">${call}
             <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(m.citizen_id)}')">📝</button>
@@ -1658,7 +1659,8 @@
       date: isoToThai(iso),
       house_no: house, moo: moo, citizen_id: head ? head.citizen_id : '',
       vhv_id: currentUser.id, vhv_name: currentUser.name,
-      note: document.getElementById('larva-note').value
+      note: document.getElementById('larva-note').value,
+      village: getSelectedVillage()
     }, r.vals);
     // ลบรายการเดิม แล้วบันทึกค่าใหม่ (ใช้คำสั่ง delete_larval / save_larval เดิมของ Apps Script)
     old.forEach(id => sendDataToGoogleSheets({ action: 'delete_larval', id: id }, null, null, null));
@@ -1868,10 +1870,65 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
 
   /* ----- รายชื่อหมู่บ้าน (เก็บในเครื่อง) ----- */
   const VLIST_KEY = 'larva_village_list_v1', VSEL_KEY = 'larva_village_selected_v1';
-  function getVillageList() { try { const a = JSON.parse(localStorage.getItem(VLIST_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-  function saveVillageList(a) { try { localStorage.setItem(VLIST_KEY, JSON.stringify(a)); } catch (e) {} }
-  function getSelectedVillage() { try { return localStorage.getItem(VSEL_KEY) || ''; } catch (e) { return ''; } }
-  function selectVillage(v) { try { localStorage.setItem(VSEL_KEY, v || ''); } catch (e) {} }
+  // เก็บ 3 ที่: Google Sheets (ชีตตั้งค่า แยกตาม อสม.) + ในเครื่อง + ติดไปกับผลสำรวจแต่ละบ้าน
+  // → ออกจากระบบ/เปลี่ยนเครื่อง/ล้างเบราว์เซอร์ ก็ยังโหลดกลับมาได้
+  function vSetKey(kind) { return 'village_' + kind + '_' + (currentUser ? currentUser.id : ''); }
+  function parseList(v) {
+    if (Array.isArray(v)) return v;
+    if (v === undefined || v === null || v === '') return null;
+    try { const a = JSON.parse(v); if (Array.isArray(a)) return a; } catch (e) {}
+    return String(v).split('|').map(x => x.trim()).filter(Boolean);
+  }
+  function localList() { try { return parseList(localStorage.getItem(VLIST_KEY + '_' + (currentUser ? currentUser.id : ''))) || parseList(localStorage.getItem(VLIST_KEY)) || []; } catch (e) { return []; } }
+  function getVillageList() {
+    const server = parseList(appSettings[vSetKey('list')]);
+    if (server) return server.map(String);
+    const fromRecords = dbLarval.filter(r => currentUser && r.vhv_id === currentUser.id && r.village).map(r => String(r.village).trim());
+    return [...new Set([...localList(), ...fromRecords])].filter(Boolean);
+  }
+  // บันทึกลงชีต "villages" ผ่าน Apps Script (action: save_villages)
+  function pushVillageSettings() {
+    if (!currentUser || !currentUser.id) return;
+    const payload = { action: 'save_villages', vhv_id: currentUser.id, villages: JSON.stringify(parseList(appSettings[vSetKey('list')]) || []), selected: appSettings[vSetKey('sel')] || '' };
+    // เก็บคิวแค่รายการล่าสุดของ อสม. คนนี้ (ไม่ให้คิวซ้ำ)
+    try { setQueue(getQueue().filter(it => !(it.data && it.data.action === 'save_villages' && it.data.vhv_id === currentUser.id))); } catch (e) {}
+    sendDataToGoogleSheets(payload, null, null, null);
+  }
+  // โหลดรายชื่อหมู่บ้านจากชีตหลังล็อกอิน
+  function loadVillagesFromServer() {
+    if (!currentUser || currentUser.role !== 'vhv' || !navigator.onLine) return;
+    fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'get_villages', vhv_id: currentUser.id }) }, 15000)
+      .then(r => r.json())
+      .then(res => {
+        if (!res || res.status !== 'success' || !res.data) return;
+        const pending = getQueue().some(it => it.data && it.data.action === 'save_villages' && it.data.vhv_id === currentUser.id);
+        if (pending) return;   // มีค่าใหม่ในเครื่องที่ยังไม่ได้ซิงค์ — ใช้ค่าในเครื่อง
+        const list = parseList(res.data.villages) || [];
+        appSettings[vSetKey('list')] = JSON.stringify(list);
+        appSettings[vSetKey('sel')] = res.data.selected || '';
+        try {
+          localStorage.setItem(VLIST_KEY + '_' + currentUser.id, JSON.stringify(list));
+          localStorage.setItem(VSEL_KEY + '_' + currentUser.id, res.data.selected || '');
+        } catch (e) {}
+        renderVillageSelect();
+      })
+      .catch(() => {});
+  }
+  function saveVillageList(a) {
+    try { localStorage.setItem(VLIST_KEY + '_' + (currentUser ? currentUser.id : ''), JSON.stringify(a)); } catch (e) {}
+    appSettings[vSetKey('list')] = JSON.stringify(a);
+    pushVillageSettings();
+  }
+  function getSelectedVillage() {
+    const sv = appSettings[vSetKey('sel')];
+    if (sv !== undefined && sv !== null) return String(sv);
+    try { return localStorage.getItem(VSEL_KEY + '_' + (currentUser ? currentUser.id : '')) || localStorage.getItem(VSEL_KEY) || ''; } catch (e) { return ''; }
+  }
+  function selectVillage(v, noPush) {
+    try { localStorage.setItem(VSEL_KEY + '_' + (currentUser ? currentUser.id : ''), v || ''); } catch (e) {}
+    appSettings[vSetKey('sel')] = v || '';
+    if (!noPush) pushVillageSettings();
+  }
   function renderVillageSelect() {
     const sel = document.getElementById('vhv-village'); if (!sel) return;
     const list = getVillageList(); let cur = getSelectedVillage();
@@ -1888,15 +1945,15 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
     const name = document.getElementById('new-village-name').value.trim();
     if (!name) { toast('กรุณาพิมพ์ชื่อหมู่บ้าน', 'warn'); return; }
     const list = getVillageList();
-    if (!list.includes(name)) { list.push(name); saveVillageList(list); }
-    selectVillage(name); renderVillageSelect(); toggleAddVillage(false);
+    if (!list.includes(name)) list.push(name);
+    selectVillage(name, true); saveVillageList(list); renderVillageSelect(); toggleAddVillage(false);
     toast('เพิ่มหมู่บ้าน "' + name + '" แล้ว');
   }
   function removeVillage() {
     const v = document.getElementById('vhv-village').value;
     if (!v) { toast('ยังไม่ได้เลือกหมู่บ้าน', 'warn'); return; }
     if (!confirm('ลบหมู่บ้าน "' + v + '" ออกจากรายการ?')) return;
-    saveVillageList(getVillageList().filter(x => x !== v)); selectVillage(''); renderVillageSelect();
+    selectVillage('', true); saveVillageList(getVillageList().filter(x => x !== v)); renderVillageSelect();
   }
 
   function printLarvalReport(mode) {
@@ -1953,7 +2010,8 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
       const mooTxt = moos.length ? moos.join(', ') : (isVHV ? myMoo : gk);
       const multiMoo = moos.length > 1;
       const vKey = mooTxt;
-      const village = (isVHV && getSelectedVillage()) || villages[vKey] || '';
+      const recVillage = (houseRecs.map(r => r.village).filter(Boolean).pop()) || '';
+      const village = (isVHV && getSelectedVillage()) || villages[vKey] || recVillage;
       if (isVHV && getSelectedVillage()) villages[vKey] = getSelectedVillage();
 
       const days = [...new Set(g.recs.map(r => { const d = parseAnyDate(r.date); return d ? d.getDate() : null; }).filter(Boolean))].sort((a, b) => a - b);
