@@ -307,7 +307,7 @@
         <form id="resident-form" class="white-panel" onsubmit="saveResident(event)" style="box-shadow:none; border:1px solid var(--border-color);">
           <h4 style="margin-bottom:15px; border-bottom:2px solid var(--primary); display:inline-block; padding-bottom:5px;">📝 แฟ้มทะเบียนลูกบ้าน</h4>
           <div class="form-row">
-            <div class="form-group"><label>เลขบัตรประชาชน (13 หลัก) *</label><input type="text" inputmode="numeric" id="res-citizen-id" maxlength="13" required oninput="checkCidDupLive()"><small id="cid-dup-hint" style="display:block; color:var(--danger); font-weight:600; margin-top:3px;"></small></div>
+            <div class="form-group"><label>เลขบัตรประชาชน (13 หลัก) *</label><input type="text" inputmode="numeric" id="res-citizen-id" maxlength="13" required oninput="checkCidDupLive()"><button type="button" id="btn-change-cid" class="btn-warn btn-small hidden" style="margin-top:5px;" onclick="startChangeCid()">✏️ แก้เลขบัตร</button><small id="cid-dup-hint" style="display:block; color:var(--danger); font-weight:600; margin-top:3px;"></small></div>
             <div class="form-group"><label>ชื่อ-นามสกุล *</label><input type="text" id="res-name" required></div>
             <div class="form-group" style="max-width:120px;"><label>เพศ *</label><select id="res-gender" required><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option></select></div>
           </div>
@@ -1402,6 +1402,7 @@
     document.getElementById('resident-form').reset();
     const i = document.getElementById('res-citizen-id'); i.readOnly = false; delete i.dataset.realCid;
     { const h = document.getElementById('cid-dup-hint'); if (h) h.textContent = ''; }
+    delete i.dataset.oldCid; { const bc = document.getElementById('btn-change-cid'); if (bc) bc.classList.add('hidden'); }
     const cEl = document.getElementById('res-coords'); cEl.value = ''; delete cEl.dataset.forHouse;
     const hint = document.getElementById('coords-hint'); if (hint) { hint.textContent = ''; hint.style.color = 'var(--text-muted)'; }
   }
@@ -1414,7 +1415,8 @@
     const apptIso = document.getElementById('res-hosp-appt').value;
     const ci = document.getElementById('res-citizen-id');
     const realCid = ci.dataset.realCid || ci.value;
-    if (!validateResidentBeforeSave(realCid, !ci.dataset.realCid)) return;
+    const oldCid = ci.dataset.oldCid || '';
+    if (!validateResidentBeforeSave(realCid, !ci.dataset.realCid || !!oldCid)) return;
     const data = {
       action: 'save_resident', citizen_id: realCid, name: document.getElementById('res-name').value,
       gender: document.getElementById('res-gender').value, dob: `${d}/${m}/${y}`, age: document.getElementById('res-age').value,
@@ -1427,6 +1429,7 @@
     sendDataToGoogleSheets(data, 'บันทึกประวัติแล้ว', null, (x) => {
       const i = dbResidents.findIndex(r => r.citizen_id === x.citizen_id);
       if (i >= 0) dbResidents[i] = x; else dbResidents.push(x);
+      if (oldCid && oldCid !== x.citizen_id) migrateCitizenId(oldCid, x.citizen_id);
       const savedHouse = x.house_no, savedMoo = x.moo, savedCoords = x.coords;
       clearResForm();
       if (savedHouse && savedMoo && savedCoords) {
@@ -1455,8 +1458,9 @@
   function editResident(cid) {
     const r = dbResidents.find(x => x.citizen_id === cid); if (!r) return;
     const ci = document.getElementById('res-citizen-id');
-    ci.value = r.citizen_id; ci.dataset.realCid = r.citizen_id; ci.readOnly = true;
+    ci.value = r.citizen_id; ci.dataset.realCid = r.citizen_id; ci.readOnly = true; delete ci.dataset.oldCid;
     { const h = document.getElementById('cid-dup-hint'); if (h) h.textContent = ''; }
+    { const bc = document.getElementById('btn-change-cid'); if (bc) bc.classList.remove('hidden'); }
     document.getElementById('res-name').value = r.name;
     document.getElementById('res-house').value = r.house_no;
     document.getElementById('res-moo').value = r.moo;
@@ -2438,6 +2442,8 @@ ${pagesHtml}
   }
   function residentIssues(r, dupSet) {
     const out = []; const cid = String(r.citizen_id || '').trim();
+    if (!/^\d{13}$/.test(cid)) out.push('เลขบัตรไม่ครบ 13 หลัก');
+    else if (!cidChecksumOk(cid)) out.push('เลขบัตรไม่ถูกต้อง (หลักสุดท้ายไม่ตรงสูตร)');
     if (dupSet && dupSet.has(cid)) out.push('เลขบัตรซ้ำกับคนอื่น');
     const g = genderFromPrefix(r.name);
     if (g && r.gender && g !== r.gender) out.push(`คำนำหน้าเป็น${g} แต่เพศเป็น${r.gender}`);
@@ -2482,12 +2488,44 @@ ${pagesHtml}
     const dup = (!el.dataset.realCid && v) ? dbResidents.find(r => String(r.citizen_id || '').trim() === v) : null;
     hint.textContent = dup ? `⛔ เลขบัตรซ้ำ: ${dup.name || '-'} (บ.${dup.house_no || '-'} ม.${dup.moo || '-'})` : '';
   }
+  // ✏️ แก้เลขบัตรของลูกบ้านเดิม (บันทึกเลขใหม่ → ลบเลขเก่า → ย้ายประวัติเยี่ยม)
+  function startChangeCid() {
+    const ci = document.getElementById('res-citizen-id');
+    const cur = ci.dataset.oldCid || ci.dataset.realCid; if (!cur) return;
+    let v = prompt('พิมพ์เลขบัตรประชาชนที่ถูกต้อง (13 หลัก)\nเลขเดิม: ' + cur, '');
+    if (v === null) return;
+    v = v.replace(/\D/g, '');
+    if (v.length !== 13) { alert('เลขบัตรต้องเป็นตัวเลข 13 หลัก'); return; }
+    if (v === cur) return;
+    if (!cidChecksumOk(v) && !confirm('⚠️ เลขนี้ไม่ผ่านการตรวจหลักสุดท้าย อาจพิมพ์ผิด\nกด OK = ใช้เลขนี้ต่อ / Cancel = ยกเลิก')) return;
+    const dup = dbResidents.find(r => String(r.citizen_id).trim() === v);
+    if (dup) { alert(`⛔ เลข ${v} มีในระบบแล้ว เป็นของ ${dup.name || '-'} (บ.${dup.house_no || '-'} ม.${dup.moo || '-'})\nไม่สามารถใช้ซ้ำได้`); return; }
+    ci.dataset.oldCid = cur; ci.dataset.realCid = v; ci.value = v;
+    const nV = dbVisits.filter(x => x.citizen_id === cur).length;
+    document.getElementById('cid-dup-hint').innerHTML = `<span style="color:#b36b00;">🔁 จะเปลี่ยนเลขบัตรจาก ${esc(cur)} → ${esc(v)} เมื่อกด 💾 บันทึก${nV ? ` (ย้ายประวัติเยี่ยม ${nV} ครั้งไปด้วย)` : ''}</span>`;
+  }
+  function migrateCitizenId(oldCid, newCid) {
+    sendDataToGoogleSheets({ action: 'delete_resident', citizen_id: oldCid }, null, null, null);
+    dbResidents = dbResidents.filter(r => r.citizen_id !== oldCid);
+    const vs = dbVisits.filter(v => v.citizen_id === oldCid);
+    vs.forEach(v => {
+      const nv = Object.assign({}, v, { action: 'save_visit', citizen_id: newCid }); delete nv._actor;
+      sendDataToGoogleSheets(nv, null, null, null);
+      v.citizen_id = newCid;
+    });
+    dbLarval.forEach(l => { if (l.citizen_id === oldCid) l.citizen_id = newCid; });
+    toast(`🔁 เปลี่ยนเลขบัตรแล้ว${vs.length ? ` + ย้ายประวัติเยี่ยม ${vs.length} ครั้ง` : ''}`, 'ok');
+  }
   // ตรวจก่อนบันทึกลูกบ้าน (คืน false = ยกเลิกการบันทึก)
   function validateResidentBeforeSave(cid, isNew) {
     const coords = document.getElementById('res-coords').value.trim();
     if (coords && !parseCoords(coords)) { alert('📍 พิกัด GPS ยังไม่สมบูรณ์ ("' + coords + '")\nกรุณากด "ดึงพิกัดใหม่" อีกครั้ง หรือ "ล้างพิกัด" ก่อนบันทึก'); return false; }
     const warns = [];
     const cidT = String(cid || '').trim();
+    if (isNew) {
+      if (!/^\d{13}$/.test(cidT)) warns.push('• เลขบัตรประชาชนไม่ครบ 13 หลัก หรือมีตัวอักษรปน');
+      else if (!cidChecksumOk(cidT)) warns.push('• เลขบัตรประชาชนไม่ถูกต้อง (หลักสุดท้ายไม่ตรงตามสูตร) — ตรวจกับบัตรอีกครั้ง');
+    }
     if (isNew && cidT) {
       const dup = dbResidents.find(r => String(r.citizen_id || '').trim() === cidT);
       if (dup) {
