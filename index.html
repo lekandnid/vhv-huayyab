@@ -203,7 +203,10 @@
       </div>
 
       <div id="tab-allres" class="white-panel hidden" style="border-top-left-radius:0;">
-        <h4 style="margin-bottom:15px; font-size:18px;">ฐานข้อมูลลูกบ้านทั้งหมด</h4>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:15px;">
+          <h4 style="margin:0; font-size:18px;">ฐานข้อมูลลูกบ้านทั้งหมด</h4>
+          <button type="button" class="btn-success" onclick="exportExcel('admin')">📥 ดึงข้อมูลลูกบ้านเป็น Excel</button>
+        </div>
         <input type="text" id="search-all-res" class="search-box" placeholder="🔍 ค้นหา (เลขบัตร, ชื่อ, บ้านเลขที่)..." onkeyup="renderAdminAllResidents()">
         <div class="table-responsive">
           <table>
@@ -359,6 +362,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <h4 style="margin:0; font-size:18px;">🏠 รายชื่อลูกบ้าน</h4>
           <button type="button" class="btn-outline btn-small" id="toggle-house-btn" onclick="toggleHouseView()">🏠 มุมมองรายบ้าน</button>
+          <button type="button" class="btn-success btn-small" onclick="exportExcel('vhv')">📥 Excel ลูกบ้าน</button>
         </div>
         <input type="text" id="search-box" class="search-box" style="margin-top:10px;" placeholder="🔍 ค้นหา..." onkeyup="renderResidents()">
 
@@ -2547,7 +2551,7 @@ ${pagesHtml}
   async function exportExcel(mode) {
     const isVHV = mode === 'vhv';
     try { showLoader(); await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
-    catch (e) { hideLoader(); alert('📶 ต้องต่ออินเทอร์เน็ตเพื่อส่งออก Excel'); return; }
+    catch (e) { hideLoader(); exportResidentsCSV(isVHV); return; }
     hideLoader();
     const res = isVHV ? dbResidents.filter(r => r.owner === currentUser.id) : dbResidents;
     const ids = new Set(res.map(r => r.citizen_id));
@@ -2584,8 +2588,23 @@ ${pagesHtml}
     add(sheet1, 'ลูกบ้าน'); add(sheet2, 'ประวัติเยี่ยม'); add(sheet3, 'ลูกน้ำรายบ้าน'); add(sheet4, 'สรุปลูกน้ำรายเดือน');
     const d = todayISO().split('-'); const stamp = `${d[2]}-${d[1]}-${parseInt(d[0]) + 543}`;
     const who = isVHV ? (currentUser.name || currentUser.id) : 'ทั้งตำบล';
-    XLSX.writeFile(wb, `ข้อมูล อสม ${who} ${stamp}.xlsx`);
-    toast('📥 ส่งออก Excel แล้ว', 'ok');
+    try { XLSX.writeFile(wb, `ข้อมูล อสม ${who} ${stamp}.xlsx`); toast('📥 ส่งออก Excel แล้ว', 'ok'); }
+    catch (e) { exportResidentsCSV(isVHV); }
+  }
+  // สำรอง: ไฟล์ CSV (เปิดด้วย Excel ได้ ภาษาไทยไม่เพี้ยน) ใช้ตอนโหลดตัวสร้าง Excel ไม่ได้
+  function exportResidentsCSV(isVHV) {
+    const res = (isVHV ? dbResidents.filter(r => r.owner === currentUser.id) : dbResidents).slice().sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no));
+    const vName = id => (dbVHV.find(u => u.vhv_id === id) || {}).name || id || '';
+    const head = ['เลขบัตรประชาชน','ชื่อ-นามสกุล','เพศ','วันเกิด','อายุ','บ้านเลขที่','หมู่','สถานะในบ้าน','เบอร์โทร','กลุ่มการดูแล','โรคประจำตัว','ยาประจำ','นัด รพ.','อสม.ผู้ดูแล','พิกัด GPS'];
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const rows = res.map(r => [ '="' + String(r.citizen_id || '') + '"', r.name, r.gender, toThaiDateStr(r.dob), r.age, r.house_no, r.moo, r.role_in_house, r.phone, r.group, r.disease, r.meds, toThaiDateStr(r.hosp_appt), vName(r.owner), r.coords ]
+      .map((v, i) => i === 0 ? v : q(v)).join(','));
+    const csv = '\uFEFF' + head.map(q).join(',') + '\r\n' + rows.join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    const d = todayISO().split('-'); a.download = `ลูกบ้าน ${isVHV ? (currentUser.name || '') : 'ทั้งตำบล'} ${d[2]}-${d[1]}-${parseInt(d[0]) + 543}.csv`;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast('📥 ดึงข้อมูลลูกบ้านเป็นไฟล์ CSV (เปิดด้วย Excel ได้)', 'ok');
   }
 </script>
 </body>
