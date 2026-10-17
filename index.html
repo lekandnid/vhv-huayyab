@@ -125,6 +125,11 @@
   .sum-card { background:#fff; border:1px solid var(--border-color); border-radius:10px; padding:10px 12px; }
   .sum-card b { font-size:22px; display:block; } .sum-card small { color:var(--text-muted); }
   .bar-mini { height:6px; background:#e9ecef; border-radius:4px; overflow:hidden; margin-top:6px; } .bar-mini > div { height:100%; background:#6f42c1; }
+  .multi-pick { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px; }
+  .multi-pick button { background:#fff !important; color:#333 !important; border:1.5px solid #adb5bd !important; border-radius:20px !important; padding:8px 14px !important; margin:0 !important; font-size:15px; width:auto; box-shadow:none !important; white-space:nowrap; }
+  .multi-pick button::before { content:'☐ '; }
+  .multi-pick button.on { background:var(--primary) !important; color:#fff !important; border-color:var(--primary) !important; font-weight:700; }
+  .multi-pick button.on::before { content:'✓ '; }
 </style>
 </head>
 <body>
@@ -170,11 +175,14 @@
     </div>
     <div class="scr-box">
       <div style="font-weight:700; margin-bottom:6px;">👨‍👩‍👧 โรคในครอบครัว (พ่อ แม่ พี่น้อง)</div>
-      <div class="chk-row" id="scr-family">
-        <label><input type="checkbox" value="เบาหวาน"> เบาหวาน</label><label><input type="checkbox" value="ความดันโลหิตสูง"> ความดันโลหิตสูง</label>
-        <label><input type="checkbox" value="โรคหัวใจ"> โรคหัวใจ</label><label><input type="checkbox" value="หลอดเลือดสมอง"> หลอดเลือดสมอง</label>
-        <label><input type="checkbox" value="ไม่มี" onchange="if(this.checked) document.querySelectorAll('#scr-family input').forEach(c=>{ if(c!==this) c.checked=false; })"> ไม่มี</label>
+      <div class="multi-pick" id="scr-family">
+        <button type="button" data-v="เบาหวาน" onclick="pickFamily(this)">เบาหวาน</button>
+        <button type="button" data-v="ความดันโลหิตสูง" onclick="pickFamily(this)">ความดันโลหิตสูง</button>
+        <button type="button" data-v="โรคหัวใจ" onclick="pickFamily(this)">โรคหัวใจ</button>
+        <button type="button" data-v="หลอดเลือดสมอง" onclick="pickFamily(this)">หลอดเลือดสมอง</button>
+        <button type="button" data-v="ไม่มี" onclick="pickFamily(this)">ไม่มี</button>
       </div>
+      <small style="color:var(--text-muted);">เลือกได้หลายข้อ • กดซ้ำเพื่อยกเลิก</small>
     </div>
     <div class="scr-box">
       <div style="font-weight:700; margin-bottom:6px;">🧠 2Q — ใน 2 สัปดาห์ที่ผ่านมา รวมวันนี้</div>
@@ -2909,6 +2917,15 @@ ${pagesHtml}
     if (!was) btn.classList.add('on');
     updateScreenCalc();
   }
+  // โรคในครอบครัว: เลือกได้หลายข้อ / "ไม่มี" ใช้แยกจากโรคอื่น
+  function pickFamily(btn) {
+    btn.classList.toggle('on');
+    const box = document.getElementById('scr-family');
+    if (btn.classList.contains('on')) {
+      if (btn.dataset.v === 'ไม่มี') box.querySelectorAll('button').forEach(b => { if (b !== btn) b.classList.remove('on'); });
+      else { const none = box.querySelector('button[data-v="ไม่มี"]'); if (none) none.classList.remove('on'); }
+    }
+  }
   function segVal(name) { const b = document.querySelector(`#screen-modal .seg[data-name="${name}"] button.on`); return b ? b.dataset.v : ''; }
   function segSet(name, v) { document.querySelectorAll(`#screen-modal .seg[data-name="${name}"] button`).forEach(b => b.classList.toggle('on', v !== '' && v != null && b.dataset.v === String(v))); }
   function loadScreenForm() {
@@ -2925,7 +2942,7 @@ ${pagesHtml}
     ['weight', 'waist', 'bp', 'dtx'].forEach(k => document.getElementById('scr-' + k).value = src[k] || '');
     SCR_SEG.forEach(k => segSet(k, SCR_CARRY_SEG.includes(k) ? val(k) : (src[k] || '')));
     const fam = String(val('family_hx') || '').split(',').map(x => x.trim());
-    document.querySelectorAll('#scr-family input').forEach(c => c.checked = fam.includes(c.value));
+    document.querySelectorAll('#scr-family button').forEach(b => b.classList.toggle('on', fam.includes(b.dataset.v)));
     const q = String(src.q9 || '').split(',');
     Q9_ITEMS.forEach((_, i) => segSet('q9_' + i, q[i] !== undefined && q[i] !== '' ? q[i] : ''));
     document.getElementById('scr-del').classList.toggle('hidden', !cur);
@@ -2941,7 +2958,7 @@ ${pagesHtml}
     const w = parseFloat(o.weight), h = parseFloat(o.height);
     o.bmi = (w > 0 && h > 0) ? (w / Math.pow(h / 100, 2)).toFixed(1) : '';
     o.bmi_level = o.bmi ? bmiLevel(parseFloat(o.bmi)) : '';
-    o.family_hx = [...document.querySelectorAll('#scr-family input:checked')].map(c => c.value).join(', ');
+    o.family_hx = [...document.querySelectorAll('#scr-family button.on')].map(b => b.dataset.v).join(', ');
     const q2pos = o.q2_sad === 'มี' || o.q2_bored === 'มี';
     if (q2pos) {
       const ans = Q9_ITEMS.map((_, i) => segVal('q9_' + i));
