@@ -96,12 +96,105 @@
   .dq-tag { display:inline-block; background:#fdecea; color:#a71d2a; border-radius:4px; padding:1px 6px; font-size:12px; margin:2px 4px 2px 0; }
   .map-legend { display:flex; gap:14px; flex-wrap:wrap; font-size:13px; margin-bottom:6px; align-items:center; }
   .map-legend i { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:4px; vertical-align:-1px; border:2px solid #fff; box-shadow:0 0 0 1px #999; }
+  .flt-bar { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; background:#f8f9fa; border:1px solid var(--border-color); border-radius:8px; padding:8px 10px; margin:8px 0 10px; }
+  .flt-bar input[type=number] { width:78px; padding:6px 8px; }
+  .flt-bar select { padding:6px 8px; max-width:220px; }
+  .flt-label { font-weight:700; }
+  .flt-count { font-size:13px; color:var(--primary); font-weight:700; }
+  .btn-scr { background:#6f42c1 !important; color:#fff !important; }
+  .seg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px 14px; margin:6px 0 10px; }
+  .seg-grid label { display:block; font-weight:600; font-size:14px; margin-bottom:4px; }
+  .seg { display:inline-flex; flex-wrap:wrap; border:1px solid #adb5bd; border-radius:8px; overflow:hidden; }
+  .seg button { background:#fff !important; color:#333 !important; border:none !important; border-right:1px solid #adb5bd !important; border-radius:0 !important; padding:8px 12px !important; margin:0 !important; font-size:14px; min-width:58px; box-shadow:none !important; }
+  .seg button:last-child { border-right:none !important; }
+  .seg button.on { background:var(--primary) !important; color:#fff !important; font-weight:700; }
+  .scr-box { background:#f7fbff; border:1px solid #cfe2ff; border-radius:8px; padding:10px 12px; margin:8px 0; }
+  .chk-row { display:flex; flex-wrap:wrap; gap:6px 16px; } .chk-row label { font-weight:500; display:flex; align-items:center; gap:5px; }
+  .scr-calc { font-size:14px; font-weight:600; margin:2px 0 10px; }
+  .scr-prev { background:#fffbe6; border:1px solid #ffe08a; border-radius:8px; padding:8px 12px; font-size:13px; margin-bottom:10px; }
+  .scr-prev:empty { display:none; }
+  .scr-flags:empty { display:none; } .scr-flags { background:#fff5f5; border:1px solid #f5c2c7; border-radius:8px; padding:8px 12px; font-size:14px; }
+  .q9-head { font-weight:700; color:#6f42c1; margin:10px 0 6px; }
+  .q9-item { padding:7px 0; border-bottom:1px dashed #dde3ea; } .q9-item .q { font-size:14px; margin-bottom:5px; }
+  .q9-item .seg { display:grid; grid-template-columns:repeat(4,1fr); width:100%; }
+  .q9-item .seg button { min-width:0; padding:8px 4px !important; font-size:13px; border-bottom:none !important; }
+  @media (max-width:520px) { .q9-item .seg { grid-template-columns:1fr 1fr; } .q9-item .seg button:nth-child(2) { border-right:none !important; } .q9-item .seg button:nth-child(-n+2) { border-bottom:1px solid #adb5bd !important; } }
+  .s-chip { display:inline-block; font-size:11px; border-radius:10px; padding:1px 7px; margin:3px 3px 0 0; background:#eef3f8; color:#334; }
+  .s-chip.ok { background:#e8f5e9; color:#1e6b34; } .s-chip.todo { background:#fff3cd; color:#7a5a00; } .s-chip.w1 { background:#fff0e0; color:#9a4a00; } .s-chip.w2 { background:#fdecea; color:#a71d2a; font-weight:700; }
+  .sum-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:10px 0 16px; }
+  .sum-card { background:#fff; border:1px solid var(--border-color); border-radius:10px; padding:10px 12px; }
+  .sum-card b { font-size:22px; display:block; } .sum-card small { color:var(--text-muted); }
+  .bar-mini { height:6px; background:#e9ecef; border-radius:4px; overflow:hidden; margin-top:6px; } .bar-mini > div { height:100%; background:#6f42c1; }
 </style>
 </head>
 <body>
 
 <div id="loader" class="hidden"><div class="spinner"></div><p style="margin-top:15px; font-weight:bold; color:var(--primary);">กำลังประมวลผลข้อมูล...</p></div>
 <div id="toast-wrap"></div>
+<div id="screen-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1050; display:flex; justify-content:center; align-items:flex-start; padding-top:20px; overflow-y:auto;">
+  <div class="white-panel" style="width:96%; max-width:760px; margin-bottom:40px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; border-bottom:2px solid var(--primary); padding-bottom:8px; margin-bottom:10px;">
+      <div><h3 style="margin:0;">📋 คัดกรองสุขภาพประจำปี</h3><div id="scr-who" style="color:var(--text-muted); font-size:14px; margin-top:3px;"></div></div>
+      <button type="button" class="btn-outline btn-small" onclick="closeScreening()">ปิด ❌</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>ปีงบประมาณ</label><select id="scr-m-fy" onchange="loadScreenForm()"></select></div>
+      <div class="form-group"><label>วันที่คัดกรอง</label><input type="date" id="scr-date"></div>
+    </div>
+    <div id="scr-prev" class="scr-prev"></div>
+    <div class="form-row">
+      <div class="form-group"><label>🏥 สถานที่รักษา</label><input type="text" id="scr-treat_place" list="scr-place-list" placeholder="เช่น รพ.สต.ห้วยยาบ">
+        <datalist id="scr-place-list"><option value="รพ.สต.ห้วยยาบ"><option value="รพ.บ้านธิ"><option value="รพ.ลำพูน"><option value="คลินิกเอกชน"></datalist></div>
+      <div class="form-group"><label>💳 สิทธิบัตร</label><select id="scr-health_right"><option value="">-- เลือก --</option><option>บัตรทอง (UC)</option><option>ประกันสังคม</option><option>ข้าราชการ/เบิกได้</option><option>รัฐวิสาหกิจ</option><option>อปท.</option><option>อื่นๆ</option></select></div>
+    </div>
+    <div class="seg-grid">
+      <div><label>🩸 กรุ๊ปเลือด</label><div class="seg" data-name="blood_group"><button type="button" data-v="A" onclick="segPick(this)">A</button><button type="button" data-v="B" onclick="segPick(this)">B</button><button type="button" data-v="AB" onclick="segPick(this)">AB</button><button type="button" data-v="O" onclick="segPick(this)">O</button><button type="button" data-v="ไม่ทราบ" onclick="segPick(this)">ไม่ทราบ</button></div></div>
+      <div><label>Rh</label><div class="seg" data-name="blood_rh"><button type="button" data-v="Rh+" onclick="segPick(this)">Rh+</button><button type="button" data-v="Rh−" onclick="segPick(this)">Rh−</button><button type="button" data-v="ไม่ทราบ" onclick="segPick(this)">ไม่ทราบ</button></div></div>
+    </div>
+    <div id="scr-blood-note" class="scr-calc"></div>
+    <div class="form-row">
+      <div class="form-group"><label>⚖️ น้ำหนัก (กก.)</label><input type="number" inputmode="decimal" step="0.1" id="scr-weight" oninput="updateScreenCalc()"></div>
+      <div class="form-group"><label>📏 ส่วนสูง (ซม.)</label><input type="number" inputmode="decimal" step="0.1" id="scr-height" oninput="updateScreenCalc()"></div>
+      <div class="form-group"><label>📐 รอบเอว (ซม.)</label><input type="number" inputmode="decimal" step="0.1" id="scr-waist" oninput="updateScreenCalc()"></div>
+    </div>
+    <div id="scr-body-calc" class="scr-calc"></div>
+    <div class="form-row">
+      <div class="form-group"><label>❤️ ความดัน (mmHg)</label><input type="text" inputmode="numeric" id="scr-bp" placeholder="เช่น 120/80" oninput="updateScreenCalc()"></div>
+      <div class="form-group"><label>🩸 ค่าน้ำตาล (mg/dL)</label><input type="number" inputmode="numeric" id="scr-dtx" placeholder="เช่น 95" oninput="updateScreenCalc()"></div>
+    </div>
+    <div class="seg-grid">
+      <div><label>🚬 สูบบุหรี่</label><div class="seg" data-name="smoke"><button type="button" data-v="สูบ" onclick="segPick(this)">สูบ</button><button type="button" data-v="ไม่สูบ" onclick="segPick(this)">ไม่สูบ</button></div></div>
+      <div><label>🍺 ดื่มสุรา</label><div class="seg" data-name="alcohol"><button type="button" data-v="ดื่ม" onclick="segPick(this)">ดื่ม</button><button type="button" data-v="ไม่ดื่ม" onclick="segPick(this)">ไม่ดื่ม</button></div></div>
+      <div><label>🏃 ออกกำลังกาย</label><div class="seg" data-name="exercise"><button type="button" data-v="ออก" onclick="segPick(this)">ออก</button><button type="button" data-v="ไม่ออก" onclick="segPick(this)">ไม่ออก</button></div></div>
+      <div><label>🦷 เจ็บปวดในช่องปาก</label><div class="seg" data-name="oral_pain"><button type="button" data-v="มี" onclick="segPick(this)">มี</button><button type="button" data-v="ไม่มี" onclick="segPick(this)">ไม่มี</button></div></div>
+    </div>
+    <div class="scr-box">
+      <div style="font-weight:700; margin-bottom:6px;">👨‍👩‍👧 โรคในครอบครัว (พ่อ แม่ พี่น้อง)</div>
+      <div class="chk-row" id="scr-family">
+        <label><input type="checkbox" value="เบาหวาน"> เบาหวาน</label><label><input type="checkbox" value="ความดันโลหิตสูง"> ความดันโลหิตสูง</label>
+        <label><input type="checkbox" value="โรคหัวใจ"> โรคหัวใจ</label><label><input type="checkbox" value="หลอดเลือดสมอง"> หลอดเลือดสมอง</label>
+        <label><input type="checkbox" value="ไม่มี" onchange="if(this.checked) document.querySelectorAll('#scr-family input').forEach(c=>{ if(c!==this) c.checked=false; })"> ไม่มี</label>
+      </div>
+    </div>
+    <div class="scr-box">
+      <div style="font-weight:700; margin-bottom:6px;">🧠 2Q — ใน 2 สัปดาห์ที่ผ่านมา รวมวันนี้</div>
+      <div class="seg-grid">
+        <div><label>หดหู่ ท้อแท้ สิ้นหวัง</label><div class="seg" data-name="q2_sad"><button type="button" data-v="มี" onclick="segPick(this)">มี</button><button type="button" data-v="ไม่มี" onclick="segPick(this)">ไม่มี</button></div></div>
+        <div><label>เบื่อ ทำอะไรก็ไม่เพลิดเพลิน</label><div class="seg" data-name="q2_bored"><button type="button" data-v="มี" onclick="segPick(this)">มี</button><button type="button" data-v="ไม่มี" onclick="segPick(this)">ไม่มี</button></div></div>
+      </div>
+      <div id="scr-q9-wrap" class="hidden">
+        <div class="q9-head">📝 แบบประเมิน 9Q (เพราะ 2Q ผลบวก) — ใน 2 สัปดาห์ที่ผ่านมา มีอาการเหล่านี้บ่อยแค่ไหน</div>
+        <div id="scr-q9"></div>
+        <div id="scr-q9-result" class="scr-calc"></div>
+      </div>
+    </div>
+    <div id="scr-flags" class="scr-flags"></div>
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button type="button" onclick="saveScreening()">💾 บันทึกผลคัดกรอง</button>
+      <button type="button" class="btn-danger hidden" id="scr-del" onclick="deleteScreening()">🗑️ ลบผลปีนี้</button>
+    </div>
+  </div>
+</div>
 <div id="map-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1100; display:flex; justify-content:center; align-items:center; padding:10px;">
   <div class="white-panel" style="width:100%; max-width:900px; height:92vh; margin:0; padding:12px; display:flex; flex-direction:column;">
     <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
@@ -158,6 +251,7 @@
         <button type="button" id="tab-btn-allres" onclick="switchAdminTab('allres')">🏠 ค้นหาลูกบ้าน</button>
         <button type="button" id="tab-btn-larva" onclick="switchAdminTab('larva')">🦟 สถิติลูกน้ำ</button>
         <button type="button" id="tab-btn-vhv" onclick="switchAdminTab('vhv')">👥 จัดการ อสม.</button>
+        <button type="button" id="tab-btn-scr" onclick="switchAdminTab('scr')">📊 คัดกรอง</button>
         <button type="button" id="tab-btn-dq" onclick="switchAdminTab('dq')">🧹 ตรวจข้อมูล <span id="dq-badge" class="dq-badge hidden"></span></button>
         <button type="button" id="tab-btn-settings" onclick="switchAdminTab('settings')">⚙️ ตั้งค่า</button>
       </div>
@@ -208,6 +302,28 @@
           <button type="button" class="btn-success" onclick="exportExcel('admin')">📥 ดึงข้อมูลลูกบ้านเป็น Excel</button>
         </div>
         <input type="text" id="search-all-res" class="search-box" placeholder="🔍 ค้นหา (เลขบัตร, ชื่อ, บ้านเลขที่)..." onkeyup="renderAdminAllResidents()">
+        <div class="flt-bar">
+          <span class="flt-label">🎂 อายุ</span>
+          <input type="number" inputmode="numeric" id="af-age-min" placeholder="ตั้งแต่" min="0" max="120" oninput="renderAdminAllResidents()">
+          <span>ถึง</span>
+          <input type="number" inputmode="numeric" id="af-age-max" placeholder="ไม่จำกัด" min="0" max="120" oninput="renderAdminAllResidents()">
+          <span>ปี</span>
+          <button type="button" class="chip" onclick="setAgeFilter('af',35,'');renderAdminAllResidents()">35+</button>
+          <button type="button" class="chip" onclick="setAgeFilter('af',60,'');renderAdminAllResidents()">60+</button>
+          <button type="button" class="chip" onclick="setAgeFilter('af','','');renderAdminAllResidents()">ทั้งหมด</button>
+          <select id="af-scr-status" onchange="renderAdminAllResidents()">
+            <option value="">📋 ทุกสถานะคัดกรอง</option>
+            <option value="done">✅ คัดกรองแล้ว (ปีงบนี้)</option>
+            <option value="todo">⏳ ยังไม่คัดกรอง (ปีงบนี้)</option>
+            <option value="flag">⚠️ มีค่าผิดปกติ</option>
+          </select>
+          <select id="af-blood" onchange="renderAdminAllResidents()">
+            <option value="">🩸 ทุกกรุ๊ปเลือด</option><option value="A">กรุ๊ป A</option><option value="B">กรุ๊ป B</option><option value="AB">กรุ๊ป AB</option><option value="O">กรุ๊ป O</option>
+            <option value="rhneg">⭐ Rh− (หมู่พิเศษ)</option><option value="unknown">ยังไม่ทราบกรุ๊ป</option>
+          </select>
+          <span id="af-flt-count" class="flt-count"></span>
+          <button type="button" class="btn-success btn-small" onclick="exportFilteredResidents('admin')">📥 Excel ตามตัวกรอง</button>
+        </div>
         <div class="table-responsive">
           <table>
             <thead><tr><th>เลขบัตรประชาชน</th><th>บ้าน/หมู่</th><th>ชื่อ-นามสกุล</th><th>อสม.ผู้ดูแล</th><th>💊 ยา / 🏥 นัด</th><th>ประวัติ</th></tr></thead>
@@ -261,6 +377,18 @@
             <tbody id="admin-vhv-list"></tbody>
           </table>
         </div>
+      </div>
+
+      <div id="tab-scr" class="white-panel hidden" style="border-top-left-radius:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+          <h4 style="margin:0; font-size:18px;">📊 สรุปผลคัดกรองสุขภาพ</h4>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <label style="font-weight:600;">ปีงบ <select id="scr-fy" onchange="renderScreenSummary()"></select></label>
+            <label style="font-weight:600;">กลุ่มเป้าหมาย อายุ ≥ <input type="number" id="scr-age" value="35" min="0" max="120" style="width:70px;" oninput="renderScreenSummary()"> ปี</label>
+            <button type="button" class="btn-success btn-small" onclick="exportScreenSummary()">📥 Excel ผลคัดกรอง</button>
+          </div>
+        </div>
+        <div id="scr-summary"></div>
       </div>
 
       <div id="tab-dq" class="white-panel hidden" style="border-top-left-radius:0;">
@@ -365,6 +493,28 @@
           <button type="button" class="btn-success btn-small" onclick="exportExcel('vhv')">📥 Excel ลูกบ้าน</button>
         </div>
         <input type="text" id="search-box" class="search-box" style="margin-top:10px;" placeholder="🔍 ค้นหา..." onkeyup="renderResidents()">
+        <div class="flt-bar">
+          <span class="flt-label">🎂 อายุ</span>
+          <input type="number" inputmode="numeric" id="vf-age-min" placeholder="ตั้งแต่" min="0" max="120" oninput="renderResidents()">
+          <span>ถึง</span>
+          <input type="number" inputmode="numeric" id="vf-age-max" placeholder="ไม่จำกัด" min="0" max="120" oninput="renderResidents()">
+          <span>ปี</span>
+          <button type="button" class="chip" onclick="setAgeFilter('vf',35,'');renderResidents()">35+</button>
+          <button type="button" class="chip" onclick="setAgeFilter('vf',60,'');renderResidents()">60+</button>
+          <button type="button" class="chip" onclick="setAgeFilter('vf','','');renderResidents()">ทั้งหมด</button>
+          <select id="vf-scr-status" onchange="renderResidents()">
+            <option value="">📋 ทุกสถานะคัดกรอง</option>
+            <option value="done">✅ คัดกรองแล้ว (ปีงบนี้)</option>
+            <option value="todo">⏳ ยังไม่คัดกรอง (ปีงบนี้)</option>
+            <option value="flag">⚠️ มีค่าผิดปกติ</option>
+          </select>
+          <select id="vf-blood" onchange="renderResidents()">
+            <option value="">🩸 ทุกกรุ๊ปเลือด</option><option value="A">กรุ๊ป A</option><option value="B">กรุ๊ป B</option><option value="AB">กรุ๊ป AB</option><option value="O">กรุ๊ป O</option>
+            <option value="rhneg">⭐ Rh− (หมู่พิเศษ)</option><option value="unknown">ยังไม่ทราบกรุ๊ป</option>
+          </select>
+          <span id="vf-flt-count" class="flt-count"></span>
+          <button type="button" class="btn-success btn-small" onclick="exportFilteredResidents('vhv')">📥 Excel ตามตัวกรอง</button>
+        </div>
 
         <div class="table-responsive" id="resident-table-wrap">
           <table>
@@ -564,7 +714,7 @@
   /* ============================================================
    *  🔧 ใส่ URL ของ Google Apps Script (ลงท้าย /exec)
    * ============================================================ */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwJd3715GtUk292WYvckf0BDY5xIt4107lRrN6ZTzsYEnui-9MIH7Uf_FQ2zRDoelJm/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwaq4Hd2jPlAHlYYC5P1z1qxe_c9IJSsgLr_9dhc0SaMpoi5cwCass7jeZhjYuegzyO/exec";
   /* ============================================================ */
 
   const QUEUE_KEY = 'vhv_offline_queue_v1';
@@ -755,6 +905,7 @@
           dbVisits = normalizeRows(res.visits);
           dbLarval = normalizeRows(res.larvals || []);
           applySettings(res.settings || {});
+          loadScreenings();
           document.getElementById('data-status').innerHTML = `<span style="color:green;">✅ โหลดแล้ว (อสม. ${dbVHV.length}, ลูกบ้าน ${dbResidents.length})</span>`;
         } else {
           document.getElementById('data-status').innerHTML = `<span style="color:red;">❌ ${res.message || 'โหลดไม่สำเร็จ'}</span>`;
@@ -1060,7 +1211,7 @@
 
   /* ========== Tabs ========== */
   function switchAdminTab(tab) {
-    ['doc','vhv','allres','larva','dq','settings'].forEach(t => {
+    ['doc','vhv','allres','larva','scr','dq','settings'].forEach(t => {
       const p = document.getElementById('tab-' + t); const b = document.getElementById('tab-btn-' + t);
       if (p) p.classList.add('hidden'); if (b) b.classList.remove('active-tab');
     });
@@ -1070,6 +1221,7 @@
     if (tab === 'larva') renderAdminLarva();
     if (tab === 'settings') fillSettingsForm();
     if (tab === 'dq') renderAdminDQ();
+    if (tab === 'scr') renderScreenSummary();
   }
   function switchVHVTab(tab) {
     ['vtask','vlarva','vreport'].forEach(t => {
@@ -1155,6 +1307,7 @@
       const mk = maskCitizenId(full);
       return full.toLowerCase().includes(searchTxt) || mk.toLowerCase().includes(searchTxt) || (r.name || '').toLowerCase().includes(searchTxt) || (r.house_no || '').toLowerCase().includes(searchTxt);
     });
+    list = applyResFilters(list, 'af');
     if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">ไม่พบข้อมูล</td></tr>`; return; }
     list = [...list].sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no));
     list.forEach(r => {
@@ -1167,10 +1320,11 @@
       tbody.innerHTML += `<tr>
         <td class="cid-cell" style="white-space:nowrap; font-family:monospace; font-size:14px;">${cidDisp}</td>
         <td>บ.${esc(r.house_no)} ม.${esc(r.moo)}</td>
-        <td><strong>${esc(r.name)}</strong>${dis}</td>
+        <td><strong>${esc(r.name)}</strong> <small style="color:var(--text-muted);">(${esc(ageOf(r) === '' ? '-' : ageOf(r))} ปี)</small>${dis}<br>${screenChips(r)}</td>
         <td style="color:var(--primary); font-weight:bold;">${esc(vhvName)}</td>
         <td>${meds}${appt}</td>
-        <td><button type="button" class="btn-small btn-outline" onclick="viewHistoryByCid('${esc(r.citizen_id)}')">🕒 ดูประวัติ</button></td>
+        <td style="white-space:nowrap;"><button type="button" class="btn-small btn-outline" onclick="viewHistoryByCid('${esc(r.citizen_id)}')">🕒 ดูประวัติ</button>
+          <button type="button" class="btn-small btn-scr" onclick="openScreening('${esc(r.citizen_id)}')">📋 คัดกรอง</button></td>
       </tr>`;
     });
   }
@@ -1504,6 +1658,7 @@
     const s = document.getElementById('search-box').value.toLowerCase();
     let list = dbResidents.filter(r => r.owner === currentUser.id);
     if (s) list = list.filter(r => (r.name || '').toLowerCase().includes(s) || (r.house_no || '').toLowerCase().includes(s) || (r.group || '').toLowerCase().includes(s) || (r.disease || '').toLowerCase().includes(s));
+    list = applyResFilters(list, 'vf');
     return list;
   }
   function renderResidents() {
@@ -1521,13 +1676,14 @@
         tbody.innerHTML += `<tr>
           <td style="font-weight:bold; color:var(--primary);">${esc(i.house_no || '-')}</td>
           <td>ม.${esc(i.moo || '-')}</td>
-          <td><strong>${esc(i.name)}</strong> ${head}<br><small class="cid-line">🪪 ${esc(i.citizen_id || '-')}</small></td>
+          <td><strong>${esc(i.name)}</strong> ${head}<br><small class="cid-line">🪪 ${esc(i.citizen_id || '-')}</small><br>${screenChips(i)}</td>
           <td>${esc(i.gender || '-')}</td>
-          <td>${esc(i.age)}</td>
+          <td>${esc(ageOf(i) === '' ? '-' : ageOf(i))}</td>
           <td>${esc(i.group)} ${dis}</td>
           <td style="white-space:nowrap;">${call}${nav}
             <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(i.citizen_id)}')">📝 แก้</button>
             <button type="button" class="btn-small" style="background:#0dcaf0; color:#000;" onclick="openVisitModalByCid('${esc(i.citizen_id)}')">🩺 เยี่ยม</button>
+            <button type="button" class="btn-small btn-scr" onclick="openScreening('${esc(i.citizen_id)}')">📋 คัดกรอง</button>
             <button type="button" class="btn-danger btn-small" onclick="deleteResident('${esc(i.citizen_id)}')">🗑️ ลบ</button>
           </td></tr>`;
       });
@@ -1549,10 +1705,11 @@
         return `<div class="member-row">
           <div><strong>${esc(m.name)}</strong>${m.role_in_house === 'เจ้าบ้าน' ? ' <span class="badge-head">เจ้าบ้าน</span>' : ''}<br>
           <small class="cid-line">🪪 ${esc(m.citizen_id || '-')}</small><br>
-          <small style="color:var(--text-muted);">${esc(m.gender)} • ${esc(m.age)} ปี • ${esc(m.group)}</small>${dis}</div>
+          <small style="color:var(--text-muted);">${esc(m.gender)} • ${esc(ageOf(m) === '' ? '-' : ageOf(m))} ปี • ${esc(m.group)}</small>${dis}<br>${screenChips(m)}</div>
           <div style="white-space:nowrap;">${call}
             <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(m.citizen_id)}')">📝</button>
             <button type="button" class="btn-small" style="background:#0dcaf0; color:#000;" onclick="openVisitModalByCid('${esc(m.citizen_id)}')">🩺 เยี่ยม</button>
+            <button type="button" class="btn-small btn-scr" onclick="openScreening('${esc(m.citizen_id)}')">📋</button>
           </div></div>`;
       }).join('');
       const cm = mem.find(m => m.coords && m.coords.trim() !== '');
@@ -2518,6 +2675,10 @@ ${pagesHtml}
       v.citizen_id = newCid;
     });
     dbLarval.forEach(l => { if (l.citizen_id === oldCid) l.citizen_id = newCid; });
+    if (dbScreen.some(x => x.citizen_id === oldCid)) {
+      sendDataToGoogleSheets({ action: 'move_screening', old_citizen_id: oldCid, citizen_id: newCid }, null, null, null);
+      dbScreen.forEach(x => { if (x.citizen_id === oldCid) x.citizen_id = newCid; });
+    }
     toast(`🔁 เปลี่ยนเลขบัตรแล้ว${vs.length ? ` + ย้ายประวัติเยี่ยม ${vs.length} ครั้ง` : ''}`, 'ok');
   }
   // ตรวจก่อนบันทึกลูกบ้าน (คืน false = ยกเลิกการบันทึก)
@@ -2563,7 +2724,7 @@ ${pagesHtml}
     const sheet1 = res.slice().sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no)).map(r => ({
       'เลขบัตรประชาชน': String(r.citizen_id || ''), 'ชื่อ-นามสกุล': r.name, 'เพศ': r.gender, 'วันเกิด': toThaiDateStr(r.dob), 'อายุ': r.age,
       'บ้านเลขที่': r.house_no, 'หมู่': r.moo, 'สถานะในบ้าน': r.role_in_house, 'เบอร์โทร': r.phone, 'กลุ่มการดูแล': r.group,
-      'โรคประจำตัว': r.disease, 'ยาประจำ': r.meds, 'นัด รพ.': toThaiDateStr(r.hosp_appt), 'อสม.ผู้ดูแล': vName(r.owner), 'พิกัด GPS': r.coords }));
+      'โรคประจำตัว': r.disease, 'ยาประจำ': r.meds, 'นัด รพ.': toThaiDateStr(r.hosp_appt), 'อสม.ผู้ดูแล': vName(r.owner), 'พิกัด GPS': r.coords, 'กรุ๊ปเลือด': bloodOf(r.citizen_id).g, 'Rh': bloodOf(r.citizen_id).rh }));
     const sheet2 = visits.map(v => { const r = rByCid[v.citizen_id] || {}; return {
       'วันที่เยี่ยม': toThaiDateStr(v.date), 'เลขบัตรประชาชน': String(v.citizen_id || ''), 'ชื่อ-นามสกุล': r.name || '', 'บ้านเลขที่': r.house_no || '', 'หมู่': r.moo || '',
       'ระดับ': v.triage, 'ความดัน (BP)': v.bp, 'น้ำตาล (DTX)': v.dtx, 'ADL': v.adl, 'กินยา': v.meds_taken, 'อาการ/ประเมิน': v.symptoms, 'นัดครั้งถัดไป': toThaiDateStr(v.next_appt), 'อสม.': vName(r.owner) }; });
@@ -2586,6 +2747,7 @@ ${pagesHtml}
       XLSX.utils.book_append_sheet(wb, ws, name);
     };
     add(sheet1, 'ลูกบ้าน'); add(sheet2, 'ประวัติเยี่ยม'); add(sheet3, 'ลูกน้ำรายบ้าน'); add(sheet4, 'สรุปลูกน้ำรายเดือน');
+    add(dbScreen.filter(x => ids.has(x.citizen_id)).sort((a, b) => cmpNum(a.fiscal_year, b.fiscal_year) || cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no)).map(screenRowForExport), 'ผลคัดกรอง');
     const d = todayISO().split('-'); const stamp = `${d[2]}-${d[1]}-${parseInt(d[0]) + 543}`;
     const who = isVHV ? (currentUser.name || currentUser.id) : 'ทั้งตำบล';
     try { XLSX.writeFile(wb, `ข้อมูล อสม ${who} ${stamp}.xlsx`); toast('📥 ส่งออก Excel แล้ว', 'ok'); }
@@ -2605,6 +2767,331 @@ ${pagesHtml}
     const d = todayISO().split('-'); a.download = `ลูกบ้าน ${isVHV ? (currentUser.name || '') : 'ทั้งตำบล'} ${d[2]}-${d[1]}-${parseInt(d[0]) + 543}.csv`;
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
     toast('📥 ดึงข้อมูลลูกบ้านเป็นไฟล์ CSV (เปิดด้วย Excel ได้)', 'ok');
+  }
+
+  /* ==================================================================
+     📋 คัดกรองสุขภาพประจำปี (ปีงบประมาณ) • 2Q→9Q • ตัวกรองอายุ • สรุปสำหรับหมอ
+     เก็บในแท็บ "ข้อมูลคัดกรอง" ผ่าน vhv_addon.gs
+     ================================================================== */
+  let dbScreen = [];
+  let scrCid = null;
+  const Q9_ITEMS = ['เบื่อ ไม่สนใจอยากทำอะไร', 'ไม่สบายใจ ซึมเศร้า ท้อแท้', 'หลับยาก หรือหลับๆ ตื่นๆ หรือหลับมากไป', 'เหนื่อยง่าย หรือไม่ค่อยมีแรง',
+    'เบื่ออาหาร หรือกินมากเกินไป', 'รู้สึกไม่ดีกับตัวเอง คิดว่าตัวเองล้มเหลว หรือทำให้ตนเองหรือครอบครัวผิดหวัง',
+    'สมาธิไม่ดีเวลาทำอะไร เช่น ดูโทรทัศน์ ฟังวิทยุ หรือทำงานที่ต้องใช้ความตั้งใจ',
+    'พูดช้า ทำอะไรช้าลงจนคนอื่นสังเกตเห็นได้ หรือกระสับกระส่ายไม่อยู่นิ่งเหมือนที่เคยเป็น', 'คิดทำร้ายตนเอง หรือคิดว่าถ้าตายไปคงจะดี'];
+  const Q9_OPTS = ['ไม่มีเลย', 'เป็นบางวัน (1-7 วัน)', 'เป็นบ่อย (>7 วัน)', 'เป็นทุกวัน'];
+  const SCR_SEG = ['smoke', 'alcohol', 'exercise', 'oral_pain', 'q2_sad', 'q2_bored', 'blood_group', 'blood_rh'];
+  const SCR_CARRY_SEG = ['blood_group', 'blood_rh'];   // ไม่เปลี่ยนตามปี → ดึงจากปีก่อน
+  // กรุ๊ปเลือดล่าสุดที่เคยบันทึก (ไม่ขึ้นกับปีงบ)
+  function bloodOf(cid) {
+    const x = screensOf(cid).find(y => y.blood_group || y.blood_rh) || {};
+    return { g: x.blood_group || '', rh: x.blood_rh || '' };
+  }
+  function bloodText(b) { if (!b.g && !b.rh) return ''; return `${b.g && b.g !== 'ไม่ทราบ' ? b.g : '?'} ${b.rh && b.rh !== 'ไม่ทราบ' ? b.rh : ''}`.trim(); }
+
+  function currentFY() { const t = new Date(Date.now() + 7 * 3600000); const y = t.getUTCFullYear() + 543; return String(t.getUTCMonth() >= 9 ? y + 1 : y); }
+  function ageOf(r) {
+    const p = parseDobToParts(r && r.dob);
+    if (p) {
+      const t = new Date(Date.now() + 7 * 3600000); const by = parseInt(p.year) - 543, bm = parseInt(p.month), bd = parseInt(p.day);
+      let a = t.getUTCFullYear() - by; if (t.getUTCMonth() + 1 < bm || (t.getUTCMonth() + 1 === bm && t.getUTCDate() < bd)) a--;
+      if (a >= 0 && a < 130) return a;
+    }
+    const n = parseInt(r && r.age); return isNaN(n) ? '' : n;
+  }
+  function screenOf(cid, fy) { return dbScreen.find(x => String(x.citizen_id).trim() === String(cid).trim() && String(x.fiscal_year) === String(fy || currentFY())); }
+  function screensOf(cid) { return dbScreen.filter(x => String(x.citizen_id).trim() === String(cid).trim()).sort((a, b) => cmpNum(b.fiscal_year, a.fiscal_year)); }
+  function loadScreenings() {
+    if (!navigator.onLine) return;
+    fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'get_screenings' }) }, 20000)
+      .then(r => r.json())
+      .then(res => {
+        if (!res || res.status !== 'success' || !Array.isArray(res.data)) return;
+        dbScreen = normalizeRows(res.data);
+        refreshScreenViews();
+      }).catch(() => {});
+  }
+  function refreshScreenViews() {
+    if (!currentUser) return;
+    if (currentUser.role === 'vhv') renderResidents();
+    else { renderAdminAllResidents(); const t = document.getElementById('tab-scr'); if (t && !t.classList.contains('hidden')) renderScreenSummary(); }
+  }
+
+  /* ----- ค่าคำนวณ & ค่าผิดปกติ ----- */
+  function bmiLevel(b) { if (!b) return ''; if (b < 18.5) return 'ผอม'; if (b < 23) return 'ปกติ'; if (b < 25) return 'ท้วม'; if (b < 30) return 'อ้วน'; return 'อ้วนมาก'; }
+  function q9Level(sc) { if (sc === '' || sc == null || isNaN(sc)) return ''; if (sc < 7) return 'ไม่มีอาการ/น้อยมาก'; if (sc <= 12) return 'ซึมเศร้าระดับน้อย'; if (sc <= 18) return 'ซึมเศร้าระดับปานกลาง'; return 'ซึมเศร้าระดับรุนแรง'; }
+  function screenFlags(x, gender) {
+    const f = []; if (!x) return f;
+    const b = parseFloat(x.bmi);
+    if (b >= 25) f.push({ t: `BMI ${b.toFixed(1)} (${bmiLevel(b)})`, lv: b >= 30 ? 2 : 1, k: 'obese' });
+    else if (b && b < 18.5) f.push({ t: `BMI ${b.toFixed(1)} (ผอม)`, lv: 1, k: 'thin' });
+    const w = parseFloat(x.waist), lim = (gender || x.gender) === 'หญิง' ? 80 : 90;
+    if (w >= lim) f.push({ t: `รอบเอว ${w} ซม. (เกิน ${lim})`, lv: 1, k: 'waist' });
+    if (x.bp || x.dtx) {
+      const ev = evaluateTriage(x.bp, x.dtx);
+      const bpm = String(x.bp || '').match(/(\d{2,3})\s*[\/\-]\s*(\d{2,3})/);
+      if (bpm && (parseInt(bpm[1]) >= 140 || parseInt(bpm[2]) >= 90)) f.push({ t: `ความดัน ${bpm[1]}/${bpm[2]}`, lv: ev.level >= 2 ? 2 : 1, k: 'bp' });
+      const d = parseFloat(String(x.dtx || '').replace(/[^\d.]/g, ''));
+      if (d >= 100) f.push({ t: `น้ำตาล ${d}${d >= 126 ? ' (สูง)' : ' (เสี่ยง)'}`, lv: ev.level >= 2 ? 2 : 1, k: 'dtx' });
+      else if (d && d < appSettings.dtx_red_low) f.push({ t: `น้ำตาลต่ำ ${d}`, lv: 2, k: 'dtx' });
+    }
+    if (x.smoke === 'สูบ') f.push({ t: 'สูบบุหรี่', lv: 1, k: 'smoke' });
+    if (x.alcohol === 'ดื่ม') f.push({ t: 'ดื่มสุรา', lv: 1, k: 'alcohol' });
+    if (x.oral_pain === 'มี') f.push({ t: 'เจ็บปวดในช่องปาก', lv: 1, k: 'oral' });
+    if (x.q2_sad === 'มี' || x.q2_bored === 'มี') {
+      const sc = parseInt(x.q9_score);
+      if (!isNaN(sc) && sc >= 7) f.push({ t: `9Q = ${sc} (${q9Level(sc)})`, lv: 2, k: 'q9' });
+      else f.push({ t: isNaN(sc) ? '2Q ผลบวก (ยังไม่ทำ 9Q)' : `2Q ผลบวก / 9Q = ${sc}`, lv: 1, k: 'q2' });
+      const q = String(x.q9 || '').split(',');
+      if (parseInt(q[8]) > 0) f.push({ t: '9Q ข้อ 9: คิดทำร้ายตนเอง — แจ้งเจ้าหน้าที่ทันที', lv: 2, k: 'q9_9' });
+    }
+    return f;
+  }
+  function screenChips(r) {
+    const age = ageOf(r), x = screenOf(r.citizen_id), fy = currentFY().slice(-2);
+    const b = bloodOf(r.citizen_id), bt = bloodText(b);
+    const bchip = bt ? (b.rh === 'Rh−' ? `<span class="s-chip w2">🩸 ${esc(bt)} ⭐</span>` : `<span class="s-chip">🩸 ${esc(bt)}</span>`) : '';
+    if (!x) return bchip + ((age !== '' && age >= 35) ? `<span class="s-chip todo">⏳ ยังไม่คัดกรอง ปีงบ ${fy}</span>` : '');
+    const f = screenFlags(x, r.gender);
+    return bchip + `<span class="s-chip ok">✅ คัดกรอง ${fy}</span>` + f.map(i => `<span class="s-chip w${i.lv}">${esc(i.t)}</span>`).join('');
+  }
+
+  /* ----- ตัวกรองรายชื่อ ----- */
+  function setAgeFilter(pre, min, max) { document.getElementById(pre + '-age-min').value = min; document.getElementById(pre + '-age-max').value = max; }
+  function applyResFilters(list, pre) {
+    const mi = document.getElementById(pre + '-age-min'), ma = document.getElementById(pre + '-age-max'), st = document.getElementById(pre + '-scr-status'), bl = document.getElementById(pre + '-blood');
+    if (!mi) return list;
+    const min = mi.value === '' ? null : parseInt(mi.value), max = ma.value === '' ? null : parseInt(ma.value), status = st.value, blood = bl ? bl.value : '';
+    const out = list.filter(r => {
+      const a = ageOf(r);
+      if (min !== null && (a === '' || a < min)) return false;
+      if (max !== null && (a === '' || a > max)) return false;
+      const x = screenOf(r.citizen_id);
+      if (status === 'done' && !x) return false;
+      if (status === 'todo' && x) return false;
+      if (status === 'flag' && !(x && screenFlags(x, r.gender).length)) return false;
+      if (blood) {
+        const b = bloodOf(r.citizen_id);
+        if (blood === 'rhneg' && b.rh !== 'Rh−') return false;
+        if (blood === 'unknown' && b.g && b.g !== 'ไม่ทราบ') return false;
+        if (['A', 'B', 'AB', 'O'].includes(blood) && b.g !== blood) return false;
+      }
+      return true;
+    });
+    const cnt = document.getElementById(pre + '-flt-count');
+    if (cnt) cnt.textContent = (min !== null || max !== null || status || blood) ? `พบ ${out.length} คน` : '';
+    return out;
+  }
+  function filteredListFor(mode) {
+    if (mode === 'vhv') return getMyFilteredResidents();
+    const q = document.getElementById('search-all-res').value.trim().toLowerCase();
+    let list = dbResidents;
+    if (q) list = list.filter(r => String(r.citizen_id || '').includes(q) || (r.name || '').toLowerCase().includes(q) || (r.house_no || '').toLowerCase().includes(q));
+    return applyResFilters(list, 'af');
+  }
+
+  /* ----- แบบฟอร์มคัดกรอง ----- */
+  function openScreening(cid) {
+    const r = dbResidents.find(x => x.citizen_id === cid); if (!r) return;
+    scrCid = cid;
+    const fy = parseInt(currentFY());
+    document.getElementById('scr-m-fy').innerHTML = [fy, fy - 1, fy - 2].map(y => `<option value="${y}">${y}</option>`).join('');
+    document.getElementById('scr-who').innerHTML = `<b>${esc(r.name)}</b> • ${esc(r.gender || '-')} • อายุ ${esc(ageOf(r) === '' ? '-' : ageOf(r))} ปี • บ.${esc(r.house_no)} ม.${esc(r.moo)}<br><span class="cid-line">🪪 ${esc(r.citizen_id)}</span>`;
+    document.getElementById('scr-q9').innerHTML = Q9_ITEMS.map((q, i) => `<div class="q9-item"><div class="q">${i + 1}. ${esc(q)}</div>
+      <div class="seg" data-name="q9_${i}">${Q9_OPTS.map((o, v) => `<button type="button" data-v="${v}" onclick="segPick(this)">${o}</button>`).join('')}</div></div>`).join('');
+    loadScreenForm();
+    document.getElementById('screen-modal').classList.remove('hidden');
+  }
+  function closeScreening() { document.getElementById('screen-modal').classList.add('hidden'); scrCid = null; }
+  function segPick(btn) {
+    const seg = btn.parentElement; const was = btn.classList.contains('on');
+    seg.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+    if (!was) btn.classList.add('on');
+    updateScreenCalc();
+  }
+  function segVal(name) { const b = document.querySelector(`#screen-modal .seg[data-name="${name}"] button.on`); return b ? b.dataset.v : ''; }
+  function segSet(name, v) { document.querySelectorAll(`#screen-modal .seg[data-name="${name}"] button`).forEach(b => b.classList.toggle('on', v !== '' && v != null && b.dataset.v === String(v))); }
+  function loadScreenForm() {
+    const r = dbResidents.find(x => x.citizen_id === scrCid); if (!r) return;
+    const fy = document.getElementById('scr-m-fy').value;
+    const cur = screenOf(scrCid, fy);
+    const prev = screensOf(scrCid).find(x => cmpNum(x.fiscal_year, fy) < 0);
+    const src = cur || {};
+    // ข้อมูลที่ไม่ค่อยเปลี่ยน ดึงจากปีก่อนมาให้ (ถ้าปีนี้ยังไม่มี)
+    const carry = (!cur && prev) ? prev : {};
+    const val = k => (src[k] !== undefined && src[k] !== '') ? src[k] : (carry[k] || '');
+    document.getElementById('scr-date').value = cur && cur.screen_date ? dateToISO(cur.screen_date) : todayISO();
+    ['treat_place', 'health_right', 'height'].forEach(k => document.getElementById('scr-' + k).value = val(k));
+    ['weight', 'waist', 'bp', 'dtx'].forEach(k => document.getElementById('scr-' + k).value = src[k] || '');
+    SCR_SEG.forEach(k => segSet(k, SCR_CARRY_SEG.includes(k) ? val(k) : (src[k] || '')));
+    const fam = String(val('family_hx') || '').split(',').map(x => x.trim());
+    document.querySelectorAll('#scr-family input').forEach(c => c.checked = fam.includes(c.value));
+    const q = String(src.q9 || '').split(',');
+    Q9_ITEMS.forEach((_, i) => segSet('q9_' + i, q[i] !== undefined && q[i] !== '' ? q[i] : ''));
+    document.getElementById('scr-del').classList.toggle('hidden', !cur);
+    document.getElementById('scr-prev').innerHTML = prev ? `📅 ปีงบ ${esc(prev.fiscal_year)}: น้ำหนัก ${esc(prev.weight || '-')} กก. • BMI ${esc(prev.bmi || '-')} • รอบเอว ${esc(prev.waist || '-')} • ความดัน ${esc(prev.bp || '-')} • น้ำตาล ${esc(prev.dtx || '-')}${cur ? '' : '<br><small>(ดึงสถานที่รักษา สิทธิบัตร กรุ๊ปเลือด ส่วนสูง และโรคในครอบครัวจากปีก่อนมาให้แล้ว)</small>'}` : '';
+    updateScreenCalc();
+  }
+  function currentScreenValues() {
+    const r = dbResidents.find(x => x.citizen_id === scrCid) || {};
+    const o = { citizen_id: scrCid, fiscal_year: document.getElementById('scr-m-fy').value, screen_date: isoToThai(document.getElementById('scr-date').value || todayISO()),
+      name: r.name || '', house_no: r.house_no || '', moo: r.moo || '', age: ageOf(r), gender: r.gender || '' };
+    ['treat_place', 'health_right', 'weight', 'height', 'waist', 'bp', 'dtx'].forEach(k => o[k] = String(document.getElementById('scr-' + k).value || '').trim());
+    SCR_SEG.forEach(k => o[k] = segVal(k));
+    const w = parseFloat(o.weight), h = parseFloat(o.height);
+    o.bmi = (w > 0 && h > 0) ? (w / Math.pow(h / 100, 2)).toFixed(1) : '';
+    o.bmi_level = o.bmi ? bmiLevel(parseFloat(o.bmi)) : '';
+    o.family_hx = [...document.querySelectorAll('#scr-family input:checked')].map(c => c.value).join(', ');
+    const q2pos = o.q2_sad === 'มี' || o.q2_bored === 'มี';
+    if (q2pos) {
+      const ans = Q9_ITEMS.map((_, i) => segVal('q9_' + i));
+      o.q9 = ans.join(',');
+      const done = ans.every(a => a !== '');
+      o.q9_score = done ? String(ans.reduce((s, a) => s + parseInt(a), 0)) : '';
+      o.q9_level = done ? q9Level(parseInt(o.q9_score)) : '';
+    } else { o.q9 = ''; o.q9_score = ''; o.q9_level = ''; }
+    o.flags = screenFlags(o, o.gender).map(f => f.t).join(' | ');
+    return o;
+  }
+  function updateScreenCalc() {
+    if (!scrCid) return;
+    const o = currentScreenValues();
+    const msg = [];
+    if (o.bmi) { const b = parseFloat(o.bmi); msg.push(`<span style="color:${b >= 23 || b < 18.5 ? 'var(--danger)' : 'var(--success)'}">ดัชนีมวลกาย (BMI) = ${o.bmi} → ${o.bmi_level}</span>`); }
+    else msg.push('<span style="color:var(--text-muted)">ใส่น้ำหนัก + ส่วนสูง เพื่อคำนวณดัชนีมวลกาย (BMI)</span>');
+    const w = parseFloat(o.waist), h = parseFloat(o.height);
+    if (w > 0 && h > 0) { const r = w / h; msg.push(`<span style="color:${r > 0.5 ? 'var(--danger)' : 'var(--success)'}">รอบเอว/ส่วนสูง = ${r.toFixed(2)} ${r > 0.5 ? '(เกินครึ่งของส่วนสูง → อ้วนลงพุง)' : '(ปกติ)'}</span>`); }
+    if (w > 0 && h > 0 && o.bmi) {
+      const bmi = parseFloat(o.bmi), male = o.gender !== 'หญิง', ag = parseInt(o.age) || 0;
+      const fat = (1.2 * bmi) + (0.23 * ag) - (male ? 16.2 : 5.4);
+      if (ag >= 15 && fat > 0 && fat < 70) msg.push(`<span>เปอร์เซ็นต์ไขมันโดยประมาณ ≈ ${fat.toFixed(1)}%</span>`);
+    }
+    document.getElementById('scr-body-calc').innerHTML = msg.join('<br>');
+    document.getElementById('scr-blood-note').innerHTML = o.blood_rh === 'Rh−' ? '<span style="color:var(--danger)">⭐ เลือดหมู่พิเศษ Rh− — รับเลือดได้เฉพาะจาก Rh− แจ้ง รพ.สต. ไว้ล่วงหน้า (หญิงตั้งครรภ์ต้องดูแลพิเศษ)</span>' : '';
+    const q2pos = o.q2_sad === 'มี' || o.q2_bored === 'มี';
+    document.getElementById('scr-q9-wrap').classList.toggle('hidden', !q2pos);
+    if (q2pos) {
+      const ans = Q9_ITEMS.map((_, i) => segVal('q9_' + i)); const n = ans.filter(a => a !== '').length;
+      document.getElementById('scr-q9-result').innerHTML = o.q9_score !== ''
+        ? `<span style="color:${parseInt(o.q9_score) >= 7 ? 'var(--danger)' : 'var(--success)'}">คะแนน 9Q = ${o.q9_score} → ${o.q9_level}${parseInt(o.q9_score) >= 7 ? ' — ส่งต่อเจ้าหน้าที่ รพ.สต. เพื่อประเมิน 8Q' : ''}</span>`
+        : `<span style="color:var(--text-muted)">ตอบแล้ว ${n}/9 ข้อ</span>`;
+    }
+    const f = screenFlags(o, o.gender);
+    document.getElementById('scr-flags').innerHTML = f.length ? '<b>⚠️ ค่าที่ควรติดตาม</b><br>' + f.map(i => `<span class="s-chip w${i.lv}">${esc(i.t)}</span>`).join('') : '';
+  }
+  function saveScreening() {
+    const o = currentScreenValues();
+    const filled = ['weight', 'height', 'waist', 'bp', 'dtx', 'smoke', 'alcohol', 'exercise', 'q2_sad', 'q2_bored', 'oral_pain'].some(k => o[k] !== '');
+    if (!filled) { alert('ยังไม่ได้กรอกผลคัดกรอง'); return; }
+    if ((o.q2_sad === 'มี' || o.q2_bored === 'มี') && o.q9_score === '' && !confirm('2Q ผลบวก แต่ยังทำ 9Q ไม่ครบ 9 ข้อ — บันทึกไว้ก่อนหรือไม่?')) return;
+    o.vhv_id = currentUser.id || 'admin'; o.vhv_name = currentUser.name || '';
+    const payload = Object.assign({ action: 'save_screening' }, o);
+    sendDataToGoogleSheets(payload, '💾 บันทึกผลคัดกรองแล้ว', null, () => {
+      dbScreen = dbScreen.filter(x => !(String(x.citizen_id) === String(o.citizen_id) && String(x.fiscal_year) === String(o.fiscal_year)));
+      const c = Object.assign({}, o); dbScreen.push(c);
+      if (o.flags.includes('คิดทำร้ายตนเอง')) alert('⚠️ 9Q ข้อ 9 มีคำตอบ "คิดทำร้ายตนเอง"\nกรุณาแจ้งเจ้าหน้าที่ ' + (appSettings.hosp_name || 'รพ.สต.') + ' ทันที' + (appSettings.hosp_phone ? '\nโทร ' + appSettings.hosp_phone : ''));
+      closeScreening(); refreshScreenViews();
+    });
+  }
+  function deleteScreening() {
+    const fy = document.getElementById('scr-m-fy').value;
+    if (!confirm(`ลบผลคัดกรองปีงบ ${fy} ของคนนี้?`)) return;
+    const cid = scrCid;
+    sendDataToGoogleSheets({ action: 'delete_screening', citizen_id: cid, fiscal_year: fy }, 'ลบแล้ว', null, () => {
+      dbScreen = dbScreen.filter(x => !(String(x.citizen_id) === String(cid) && String(x.fiscal_year) === String(fy)));
+      closeScreening(); refreshScreenViews();
+    });
+  }
+
+  /* ----- สรุปผลคัดกรองสำหรับหมอ ----- */
+  function renderScreenSummary() {
+    const box = document.getElementById('scr-summary'); if (!box) return;
+    const sel = document.getElementById('scr-fy'); const cfy = parseInt(currentFY());
+    if (!sel.options.length) sel.innerHTML = [cfy, cfy - 1, cfy - 2].map(y => `<option value="${y}">${y}</option>`).join('');
+    const fy = sel.value, minAge = parseInt(document.getElementById('scr-age').value) || 0;
+    const target = dbResidents.filter(r => { const a = ageOf(r); return a !== '' && a >= minAge; });
+    const done = target.map(r => ({ r, x: screenOf(r.citizen_id, fy) })).filter(o => o.x);
+    const pct = (n, d) => d ? Math.round(n / d * 1000) / 10 : 0;
+    const cnt = fn => done.filter(fn).length;
+    const has = (o, k) => screenFlags(o.x, o.r.gender).some(f => f.k === k);
+    const items = [
+      ['🚬 สูบบุหรี่', cnt(o => o.x.smoke === 'สูบ')], ['🍺 ดื่มสุรา', cnt(o => o.x.alcohol === 'ดื่ม')], ['🛋️ ไม่ออกกำลังกาย', cnt(o => o.x.exercise === 'ไม่ออก')],
+      ['⚖️ BMI ≥ 25 (อ้วน)', cnt(o => has(o, 'obese'))], ['📐 รอบเอวเกิน', cnt(o => has(o, 'waist'))], ['❤️ ความดัน ≥ 140/90', cnt(o => has(o, 'bp'))],
+      ['🩸 น้ำตาล ≥ 100', cnt(o => has(o, 'dtx'))], ['🧠 2Q ผลบวก', cnt(o => o.x.q2_sad === 'มี' || o.x.q2_bored === 'มี')], ['🦷 ปวดช่องปาก', cnt(o => o.x.oral_pain === 'มี')]];
+    const cov = pct(done.length, target.length);
+    let html = `<div class="sum-grid">
+      <div class="sum-card" style="border-color:#6f42c1;"><small>คัดกรองแล้ว (อายุ ≥ ${minAge} ปี) ปีงบ ${esc(fy)}</small><b>${done.length} / ${target.length} คน</b><small>${cov}%</small><div class="bar-mini"><div style="width:${cov}%"></div></div></div>
+      ${items.map(([t, n]) => `<div class="sum-card"><small>${t}</small><b>${n}</b><small>${pct(n, done.length)}% ของผู้ที่คัดกรอง</small></div>`).join('')}
+    </div>`;
+    const group = keyFn => { const g = {}; target.forEach(r => { const k = keyFn(r); (g[k] = g[k] || { all: 0, done: 0, flag: 0 }).all++; const x = screenOf(r.citizen_id, fy); if (x) { g[k].done++; if (screenFlags(x, r.gender).length) g[k].flag++; } }); return g; };
+    const tbl = (title, g, label) => `<h4 style="margin:14px 0 6px;">${title}</h4><div class="table-responsive"><table><thead><tr><th>${label}</th><th>กลุ่มเป้าหมาย</th><th>คัดกรองแล้ว</th><th>%</th><th>มีค่าผิดปกติ</th></tr></thead><tbody>${
+      Object.keys(g).sort(cmpNum).map(k => `<tr><td>${esc(k)}</td><td>${g[k].all}</td><td>${g[k].done}</td><td style="font-weight:700; color:${pct(g[k].done, g[k].all) >= 80 ? 'var(--success)' : 'var(--danger)'};">${pct(g[k].done, g[k].all)}%</td><td>${g[k].flag}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;">ไม่มีข้อมูล</td></tr>'}</tbody></table></div>`;
+    html += tbl('📍 แยกตามหมู่', group(r => 'หมู่ ' + normMoo(r.moo)), 'หมู่');
+    html += tbl('👤 แยกตาม อสม.', group(r => (dbVHV.find(u => u.vhv_id === r.owner) || {}).name || r.owner || 'ไม่ระบุ'), 'อสม.');
+    const follow = done.map(o => ({ o, f: screenFlags(o.x, o.r.gender) })).filter(z => z.f.length).sort((a, b) => Math.max(...b.f.map(i => i.lv)) - Math.max(...a.f.map(i => i.lv)));
+    html += `<h4 style="margin:14px 0 6px;">⚠️ รายชื่อที่ต้องติดตาม (${follow.length} คน)</h4>` + (follow.length ? follow.map(z => `<div class="dq-item"><div><strong>${esc(z.o.r.name)}</strong> <small style="color:var(--text-muted);">อายุ ${esc(ageOf(z.o.r))} • บ.${esc(z.o.r.house_no)} ม.${esc(z.o.r.moo)} • อสม. ${esc((dbVHV.find(u => u.vhv_id === z.o.r.owner) || {}).name || '-')}</small><br>${z.f.map(i => `<span class="s-chip w${i.lv}">${esc(i.t)}</span>`).join('')}</div>
+      <button type="button" class="btn-small btn-scr" onclick="openScreening('${esc(z.o.r.citizen_id)}')">📋 ดูผล</button></div>`).join('') : '<p style="color:var(--text-muted);">ไม่มี</p>');
+    box.innerHTML = html;
+  }
+
+  /* ----- ส่งออก Excel ----- */
+  function screenRowForExport(x) {
+    return { 'ปีงบประมาณ': x.fiscal_year, 'วันที่คัดกรอง': toThaiDateStr(x.screen_date), 'เลขบัตรประชาชน': String(x.citizen_id || ''), 'ชื่อ-นามสกุล': x.name, 'เพศ': x.gender, 'อายุ': x.age,
+      'บ้านเลขที่': x.house_no, 'หมู่': x.moo, 'สถานที่รักษา': x.treat_place, 'สิทธิบัตร': x.health_right, 'กรุ๊ปเลือด': x.blood_group, 'Rh': x.blood_rh, 'น้ำหนัก (กก.)': x.weight, 'ส่วนสูง (ซม.)': x.height, 'รอบเอว (ซม.)': x.waist,
+      'ดัชนีมวลกาย': x.bmi, 'ระดับ BMI': x.bmi_level, 'ความดัน': x.bp, 'ค่าน้ำตาล': x.dtx, 'สูบบุหรี่': x.smoke, 'ดื่มสุรา': x.alcohol, 'ออกกำลังกาย': x.exercise,
+      '2Q หดหู่ท้อแท้สิ้นหวัง': x.q2_sad, '2Q เบื่อไม่เพลิดเพลิน': x.q2_bored, '9Q คะแนน': x.q9_score, '9Q ระดับ': x.q9_level, 'เจ็บปวดในช่องปาก': x.oral_pain,
+      'โรคในครอบครัว': x.family_hx, 'ค่าผิดปกติ': screenFlags(x, x.gender).map(f => f.t).join(', '), 'อสม.ผู้คัดกรอง': x.vhv_name };
+  }
+  function residentScreenRow(r) {
+    const x = screenOf(r.citizen_id) || {};
+    const base = { 'เลขบัตรประชาชน': String(r.citizen_id || ''), 'ชื่อ-นามสกุล': r.name, 'เพศ': r.gender, 'วันเกิด': toThaiDateStr(r.dob), 'อายุ': ageOf(r),
+      'บ้านเลขที่': r.house_no, 'หมู่': r.moo, 'เบอร์โทร': r.phone, 'กลุ่มการดูแล': r.group, 'โรคประจำตัว': r.disease,
+      'อสม.ผู้ดูแล': (dbVHV.find(u => u.vhv_id === r.owner) || {}).name || r.owner || '',
+      'กรุ๊ปเลือด': bloodOf(r.citizen_id).g, 'Rh': bloodOf(r.citizen_id).rh, ['คัดกรองปีงบ ' + currentFY()]: x.citizen_id ? 'คัดกรองแล้ว' : 'ยังไม่คัดกรอง' };
+    if (!x.citizen_id) return base;
+    const s = screenRowForExport(x);
+    ['ปีงบประมาณ', 'เลขบัตรประชาชน', 'ชื่อ-นามสกุล', 'เพศ', 'อายุ', 'บ้านเลขที่', 'หมู่', 'กรุ๊ปเลือด', 'Rh'].forEach(k => delete s[k]);
+    return Object.assign(base, s);
+  }
+  async function writeXlsx(sheets, filename) {
+    try { showLoader(); await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); hideLoader(); }
+    catch (e) { hideLoader(); return writeCsvFallback(sheets[0][0], filename.replace(/\.xlsx$/, '.csv')); }
+    const wb = XLSX.utils.book_new();
+    sheets.forEach(([rows, name]) => {
+      const keys = [...new Set(rows.flatMap(r => Object.keys(r)))];
+      const ws = rows.length ? XLSX.utils.json_to_sheet(rows, { header: keys }) : XLSX.utils.aoa_to_sheet([['ไม่มีข้อมูล']]);
+      if (rows.length) ws['!cols'] = keys.map(h => ({ wch: Math.min(40, Math.max(h.length + 2, ...rows.map(r => String(r[h] == null ? '' : r[h]).length + 1))) }));
+      XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
+    });
+    try { XLSX.writeFile(wb, filename); toast('📥 ส่งออก Excel แล้ว', 'ok'); } catch (e) { writeCsvFallback(sheets[0][0], filename.replace(/\.xlsx$/, '.csv')); }
+  }
+  function writeCsvFallback(rows, filename) {
+    const keys = [...new Set(rows.flatMap(r => Object.keys(r)))];
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [keys.map(q).join(',')].concat(rows.map(r => keys.map(k => k === 'เลขบัตรประชาชน' ? '="' + (r[k] || '') + '"' : q(r[k])).join(',')));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast('📥 ส่งออกเป็น CSV (เปิดด้วย Excel ได้)', 'ok');
+  }
+  function stampTH() { const d = todayISO().split('-'); return `${d[2]}-${d[1]}-${parseInt(d[0]) + 543}`; }
+  function exportFilteredResidents(mode) {
+    const pre = mode === 'vhv' ? 'vf' : 'af';
+    const list = filteredListFor(mode).slice().sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no));
+    if (!list.length) { alert('ไม่มีรายชื่อตามตัวกรอง'); return; }
+    const mi = document.getElementById(pre + '-age-min').value, ma = document.getElementById(pre + '-age-max').value;
+    const st = document.getElementById(pre + '-scr-status'); const stTxt = st.value ? st.options[st.selectedIndex].text.replace(/^[^\s]+\s/, '') : '';
+    const ageTxt = mi || ma ? `อายุ ${mi || 0}${ma ? '-' + ma : '+'} ปี` : 'ทุกอายุ';
+    const who = mode === 'vhv' ? (currentUser.name || '') : 'ทั้งตำบล';
+    writeXlsx([[list.map(residentScreenRow), 'รายชื่อ ' + ageTxt]], `ลูกบ้าน ${ageTxt}${stTxt ? ' ' + stTxt : ''} ${who} ${stampTH()}.xlsx`.replace(/[\\/:*?"<>|()]/g, ''));
+  }
+  function exportScreenSummary() {
+    const fy = document.getElementById('scr-fy').value, minAge = parseInt(document.getElementById('scr-age').value) || 0;
+    const target = dbResidents.filter(r => { const a = ageOf(r); return a !== '' && a >= minAge; }).sort((a, b) => cmpNum(a.moo, b.moo) || cmpNum(a.house_no, b.house_no));
+    const rowsDone = dbScreen.filter(x => String(x.fiscal_year) === String(fy)).map(screenRowForExport);
+    const todo = target.filter(r => !screenOf(r.citizen_id, fy)).map(r => ({ 'เลขบัตรประชาชน': String(r.citizen_id || ''), 'ชื่อ-นามสกุล': r.name, 'เพศ': r.gender, 'อายุ': ageOf(r), 'บ้านเลขที่': r.house_no, 'หมู่': r.moo, 'เบอร์โทร': r.phone, 'อสม.ผู้ดูแล': (dbVHV.find(u => u.vhv_id === r.owner) || {}).name || '' }));
+    const follow = rowsDone.filter(r => r['ค่าผิดปกติ']);
+    writeXlsx([[rowsDone, 'ผลคัดกรอง ปีงบ ' + fy], [follow, 'ต้องติดตาม'], [todo, 'ยังไม่คัดกรอง อายุ' + minAge + '+']], `ผลคัดกรองสุขภาพ ปีงบ ${fy} ${stampTH()}.xlsx`);
   }
 </script>
 </body>
