@@ -396,6 +396,12 @@
             <button type="button" class="btn-success btn-small" onclick="exportScreenSummary()">📥 Excel ผลคัดกรอง</button>
           </div>
         </div>
+        <div class="flt-bar" style="margin-top:0;">
+          <span class="flt-label">📄 แบบฟอร์ม 35 ปีขึ้นไป (B4)</span>
+          <select id="f35-scope" onfocus="fillForm35Scope()"><option value="all">ทั้งตำบล</option></select>
+          <button type="button" class="btn-small btn-scr" onclick="exportForm35('admin')">📥 ดาวน์โหลด</button>
+          <small style="color:var(--text-muted);">ใช้ปีงบที่เลือกด้านบน • อายุ 35 ปีขึ้นไปทุกคน</small>
+        </div>
         <div id="scr-summary"></div>
       </div>
 
@@ -522,6 +528,7 @@
           </select>
           <span id="vf-flt-count" class="flt-count"></span>
           <button type="button" class="btn-success btn-small" onclick="exportFilteredResidents('vhv')">📥 Excel ตามตัวกรอง</button>
+          <button type="button" class="btn-small btn-scr" onclick="exportForm35('vhv')">📥 แบบฟอร์ม 35 ปีขึ้นไป (B4)</button>
         </div>
 
         <div class="table-responsive" id="resident-table-wrap">
@@ -1229,7 +1236,7 @@
     if (tab === 'larva') renderAdminLarva();
     if (tab === 'settings') fillSettingsForm();
     if (tab === 'dq') renderAdminDQ();
-    if (tab === 'scr') renderScreenSummary();
+    if (tab === 'scr') { renderScreenSummary(); fillForm35Scope(); }
   }
   function switchVHVTab(tab) {
     ['vtask','vlarva','vreport'].forEach(t => {
@@ -3109,6 +3116,155 @@ ${pagesHtml}
     const todo = target.filter(r => !screenOf(r.citizen_id, fy)).map(r => ({ 'เลขบัตรประชาชน': String(r.citizen_id || ''), 'ชื่อ-นามสกุล': r.name, 'เพศ': r.gender, 'อายุ': ageOf(r), 'บ้านเลขที่': r.house_no, 'หมู่': r.moo, 'เบอร์โทร': r.phone, 'อสม.ผู้ดูแล': (dbVHV.find(u => u.vhv_id === r.owner) || {}).name || '' }));
     const follow = rowsDone.filter(r => r['ค่าผิดปกติ']);
     writeXlsx([[rowsDone, 'ผลคัดกรอง ปีงบ ' + fy], [follow, 'ต้องติดตาม'], [todo, 'ยังไม่คัดกรอง อายุ' + minAge + '+']], `ผลคัดกรองสุขภาพ ปีงบ ${fy} ${stampTH()}.xlsx`);
+  }
+
+  /* ==================================================================
+     📄 แบบฟอร์ม "ประชากรอายุ 35 ปี ขึ้นไป" (B4) — เติมข้อมูลลงไฟล์ต้นแบบ Excel
+     ระบบจับคู่ข้อมูลจาก "ชื่อหัวคอลัมน์" (ไม่ล็อกตำแหน่งคอลัมน์)
+     ถ้าแบบฟอร์มเปลี่ยน: แทนค่า FORM35_TEMPLATE_B64 ด้วยไฟล์ใหม่ (base64)
+     ================================================================== */
+  const FORM35_TEMPLATE_B64 = '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';
+  const FORM35_FILE_TITLE = 'ประชากร35ปีขึ้นไป';
+  // กฎจับคู่หัวคอลัมน์ → ข้อมูล (ตรวจตามลำดับ ข้อแรกที่ตรงจะถูกใช้)
+  const FORM35_RULES = [
+    [/^(ที่|ลำดับ|ลำดับที่)$/, 'seq'],
+    [/โรคในครอบครัว|ประวัติครอบครัว/, 'family_hx'],
+    [/เลขบัตร|บัตรประชาชน|เลขประจำตัว/, 'cid'],
+    [/ชื่อ/, 'name'],
+    [/บ้านเลขที่|เลขที่บ้าน/, 'house_no'],
+    [/^หมู่/, 'moo'],
+    [/เบอร์|โทร/, 'phone'],
+    [/วันเกิด/, 'dob'],
+    [/^อายุ/, 'age'],
+    [/^เพศ/, 'gender'],
+    [/โรคประจำตัว/, 'disease'],
+    [/สถานที่รักษา|รักษาที่/, 'treat_place'],
+    [/สิทธิ/, 'health_right'],
+    [/กรุ๊ปเลือด|หมู่เลือด/, 'blood_group'],
+    [/^rh/i, 'blood_rh'],
+    [/น้ำหนัก/, 'weight'],
+    [/ส่วนสูง/, 'height'],
+    [/รอบเอว/, 'waist'],
+    [/ดัชนีมวลกาย|bmi/i, 'bmi'],
+    [/ความดัน/, 'bp'],
+    [/น้ำตาล/, 'dtx'],
+    [/สูบบุหรี่.*ไม่สูบ|ไม่สูบ/, 'smoke=ไม่สูบ'],
+    [/สูบบุหรี่.*สูบ|^สูบ/, 'smoke=สูบ'],
+    [/ดื่มสุรา.*ไม่ดื่ม|ไม่ดื่ม/, 'alcohol=ไม่ดื่ม'],
+    [/ดื่มสุรา.*ดื่ม|^ดื่ม/, 'alcohol=ดื่ม'],
+    [/ออกกำลังกาย.*ไม่ออก|ไม่ออก/, 'exercise=ไม่ออก'],
+    [/ออกกำลังกาย/, 'exercise=ออก'],
+    [/หดหู่|ท้อแท้|สิ้นหวัง/, 'q2_sad=มี'],
+    [/เบื่อ|เพลิดเพลิน/, 'q2_bored=มี'],
+    [/9q/i, 'q9_score'],
+    [/ช่องปาก/, 'oral_pain=มี'],
+    [/วันที่คัดกรอง/, 'screen_date'],
+    [/อสม/, 'vhv_name']
+  ];
+  function fillForm35Scope() {
+    const sel = document.getElementById('f35-scope'); if (!sel) return;
+    const cur = sel.value;
+    const moos = [...new Set(dbResidents.map(r => normMoo(r.moo)).filter(Boolean))].sort(cmpNum);
+    sel.innerHTML = '<option value="all">ทั้งตำบล</option>'
+      + (moos.length ? '<optgroup label="ทีละหมู่">' + moos.map(m => `<option value="moo:${esc(m)}">หมู่ ${esc(m)}</option>`).join('') + '</optgroup>' : '')
+      + (dbVHV.length ? '<optgroup label="ทีละ อสม.">' + dbVHV.map(u => `<option value="vhv:${esc(u.vhv_id)}">${esc(u.name || u.vhv_id)}</option>`).join('') + '</optgroup>' : '');
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  }
+  function form35Value(field, r, x) {
+    if (field.includes('=')) { const [k, v] = field.split('='); return x && x[k] === v ? '✓' : ''; }
+    const num = v => { const n = parseFloat(String(v || '').replace(/[^\d.]/g, '')); return isNaN(n) ? (v || '') : n; };
+    switch (field) {
+      case 'cid': return String(r.citizen_id || '');
+      case 'name': return r.name || '';
+      case 'house_no': return String(r.house_no || '');
+      case 'moo': return String(r.moo || '');
+      case 'phone': return String(r.phone || '');
+      case 'dob': return toThaiDateStr(r.dob);
+      case 'age': return ageOf(r);
+      case 'gender': return r.gender || '';
+      case 'disease': return r.disease && r.disease !== '-' ? r.disease : (r.disease === '-' ? '-' : '');
+      case 'blood_group': { const b = bloodOf(r.citizen_id); return b.g; }
+      case 'blood_rh': { const b = bloodOf(r.citizen_id); return b.rh; }
+      case 'vhv_name': return (dbVHV.find(u => u.vhv_id === r.owner) || {}).name || '';
+    }
+    if (!x) return '';
+    if (['weight', 'height', 'waist', 'dtx', 'q9_score'].includes(field)) return x[field] === '' || x[field] == null ? '' : num(x[field]);
+    if (field === 'bmi') return x.bmi ? num(x.bmi) : '';
+    if (field === 'screen_date') return toThaiDateStr(x.screen_date);
+    return x[field] || '';
+  }
+  async function exportForm35(mode) {
+    let list, who;
+    const fy = mode === 'admin' ? (document.getElementById('scr-fy').value || currentFY()) : currentFY();
+    if (mode === 'vhv') { list = dbResidents.filter(r => r.owner === currentUser.id); who = currentUser.name || ''; }
+    else {
+      const sc = (document.getElementById('f35-scope') || {}).value || 'all';
+      if (sc.startsWith('moo:')) { const m = sc.slice(4); list = dbResidents.filter(r => normMoo(r.moo) === m); who = 'หมู่ ' + m; }
+      else if (sc.startsWith('vhv:')) { const id = sc.slice(4); list = dbResidents.filter(r => r.owner === id); who = (dbVHV.find(u => u.vhv_id === id) || {}).name || id; }
+      else { list = dbResidents.slice(); who = 'ทั้งตำบล'; }
+    }
+    const noAge = list.filter(r => ageOf(r) === '').length;
+    list = list.filter(r => { const a = ageOf(r); return a !== '' && a >= 35; })
+      .sort((a, b) => cmpNum(normMoo(a.moo), normMoo(b.moo)) || cmpNum(a.house_no, b.house_no) || (a.role_in_house === 'เจ้าบ้าน' ? -1 : b.role_in_house === 'เจ้าบ้าน' ? 1 : 0));
+    if (!list.length) { alert('ไม่มีลูกบ้านอายุ 35 ปีขึ้นไป' + (noAge ? `\n(มี ${noAge} คนที่ไม่มีวันเกิดในระบบ จึงคำนวณอายุไม่ได้)` : '')); return; }
+    try { showLoader(); await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'); }
+    catch (e) { hideLoader(); alert('📶 ต้องต่ออินเทอร์เน็ตเพื่อสร้างแบบฟอร์ม Excel'); return; }
+    try {
+      const bin = atob(FORM35_TEMPLATE_B64); const buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+      const wb = new ExcelJS.Workbook(); await wb.xlsx.load(buf.buffer);
+      const ws = wb.worksheets[0];
+      const txt = c => { const v = c.value; if (v == null) return ''; if (typeof v === 'object') { if (v.richText) return v.richText.map(t => t.text).join(''); if (v.formula) return ''; return String(v.result || ''); } return String(v); };
+      const norm = t => String(t || '').replace(/[\s​]/g, '').toLowerCase();
+      // หาแถวแรกของข้อมูล = แถวแรกที่คอลัมน์ A เป็นตัวเลข
+      let dataStart = 0;
+      for (let r = 1; r <= Math.min(ws.rowCount, 30); r++) { const v = ws.getRow(r).getCell(1).value; if (typeof v === 'number') { dataStart = r; break; } }
+      if (!dataStart) throw new Error('ไม่พบแถวข้อมูลในแบบฟอร์ม');
+      // แถวหัวตาราง = แถวที่อยู่ก่อนแถวข้อมูล ที่มีหัวคอลัมน์ต่างกันหลายช่อง (ข้ามแถวชื่อเรื่อง)
+      const headRows = [];
+      for (let r = 1; r < dataStart; r++) { const row = ws.getRow(r); const vals = new Set(); for (let c = 1; c <= ws.columnCount; c++) { const t = txt(row.getCell(c)); if (t) vals.add(t); } if (vals.size >= 2) headRows.push(r); }
+      const colField = {};
+      for (let c = 1; c <= ws.columnCount; c++) {
+        const parts = []; headRows.forEach(r => { const t = txt(ws.getRow(r).getCell(c)); if (t && !parts.includes(t)) parts.push(t); });
+        const h = norm(parts.join('|'));
+        const hit = FORM35_RULES.find(([re]) => re.test(h) || parts.some(p => re.test(norm(p)) && re.source.startsWith('^')));
+        if (hit) colField[c] = hit[1];
+      }
+      // แถวต้นแบบ (มีเส้นตาราง) เพื่อใช้ขยายแถว
+      let capEnd = dataStart;
+      while (capEnd + 1 <= ws.rowCount && typeof ws.getRow(capEnd + 1).getCell(1).value === 'number') capEnd++;
+      const tplRow = ws.getRow(dataStart), lastTpl = ws.getRow(capEnd);
+      const formulas = {};
+      for (let c = 1; c <= ws.columnCount; c++) { const v = tplRow.getCell(c).value; if (v && typeof v === 'object' && v.formula) formulas[c] = v.formula; }
+      const fRow = (f, r) => f.replace(new RegExp('(\\$?[A-Z]{1,3})\\$?' + dataStart + '(?![0-9])', 'g'), '$1' + r);
+      const lastRow = Math.max(capEnd, dataStart + list.length - 1);
+      for (let i = 0; dataStart + i <= lastRow; i++) {
+        const rn = dataStart + i, row = ws.getRow(rn);
+        if (rn > capEnd) { row.height = lastTpl.height; for (let c = 1; c <= ws.columnCount; c++) row.getCell(c).style = JSON.parse(JSON.stringify(lastTpl.getCell(c).style || {})); }
+        const r = list[i];
+        for (let c = 1; c <= ws.columnCount; c++) {
+          const cell = row.getCell(c), f = colField[c];
+          if (formulas[c]) { cell.value = { formula: fRow(formulas[c], rn) }; continue; }
+          if (f === 'seq') { cell.value = i + 1; continue; }
+          if (!r) { if (rn > capEnd) cell.value = null; continue; }
+          if (!f) continue;
+          const v = form35Value(f, r, screenOf(r.citizen_id, fy));
+          cell.value = (v === '' || v == null) ? null : v;
+        }
+        row.commit && row.commit();
+      }
+      if (lastRow > capEnd) {
+        ws.pageSetup.printArea = `A1:${ws.getColumn(ws.columnCount).letter}${lastRow}`;
+        ws.pageSetup.fitToPage = true; ws.pageSetup.fitToWidth = 1; ws.pageSetup.fitToHeight = 0;
+      }
+      const out = await wb.xlsx.writeBuffer();
+      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `${FORM35_FILE_TITLE} ${who} ปีงบ${fy} ${stampTH()}.xlsx`.replace(/[\\/:*?"<>|]/g, '');
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      const done = list.filter(r => screenOf(r.citizen_id, fy)).length;
+      toast(`📄 แบบฟอร์ม 35+ : ${list.length} คน (คัดกรองแล้ว ${done})${noAge ? ` • ไม่มีวันเกิด ${noAge} คน` : ''}`, 'ok');
+    } catch (e) { console.error(e); alert('สร้างแบบฟอร์มไม่สำเร็จ: ' + e.message); }
+    finally { hideLoader(); }
   }
 </script>
 </body>
