@@ -2433,6 +2433,7 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
       const dayTxt = days.length === 0 ? '' : (days.length <= 3 ? days.join(', ') : days[0] + '–' + days[days.length - 1]);
       const surveyor = isVHV ? currentUser.name : [...new Set(g.recs.map(r => r.vhv_name || r.vhv_id).filter(Boolean))].join(', ');
 
+      const has0 = houseRecs.length > 0;
       const rowHtml = houseRecs.map(r => {
         const members = dbResidents.filter(x => normMoo(x.moo) === r._moo && String(x.house_no).trim() === String(r.house_no).trim()).length;
         const st = larvaRecordStats(r);
@@ -2448,6 +2449,17 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
 
       const chunks = [];
       for (let i = 0; i < Math.max(rowHtml.length, 1); i += ROWS) chunks.push(rowHtml.slice(i, i + ROWS));
+      // แผ่นสุดท้ายต้องเหลือที่ให้แถว "รวม" 1 แถว
+      if (chunks[chunks.length - 1].length >= ROWS) chunks.push([chunks[chunks.length - 1].pop()]);
+      // แถวรวม (บวกแนวตั้งทุกบ้าน) — ไม่รวมช่องสมาชิก
+      let totalTds = '<td class="hn">รวม</td><td></td>';
+      LARVA_TYPES.forEach(t => {
+        let p = 0, n = 0;
+        houseRecs.forEach(r => { const tot = num(r[t.key + '_total']), pos = Math.min(num(r[t.key + '_pos']), tot); p += pos; n += tot - pos; });
+        totalTds += has0 ? `<td>${p}</td><td>${n}</td>` : '<td></td><td></td>';
+      });
+      totalTds += has0 ? `<td>${sum.totalC}</td><td>${sum.posC}</td>` : '<td></td><td></td>';
+      const totalRow = `<tr class="total">${totalTds}</tr>`;
       const blankRow = '<tr class="empty">' + `<td>${D}</td>`.repeat(16) + '</tr>';
       const headTop = LARVA_TYPES.map(t => `<th colspan="2">${esc(t.col)}</th>`).join('');
       const headSub = LARVA_TYPES.map(() => '<th>พบ</th><th>ไม่พบ</th>').join('');
@@ -2456,7 +2468,8 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
 
       chunks.forEach((rows, ci) => {
         const last = ci === chunks.length - 1;
-        while (rows.length < ROWS) rows.push(blankRow);
+        while (rows.length < (last ? ROWS - 1 : ROWS)) rows.push(blankRow);
+        if (last) rows.push(totalRow);
         pagesHtml += `
 <section class="sheet">
   ${chunks.length > 1 ? `<div class="pageno">แผ่นที่ ${ci + 1}/${chunks.length}</div>` : ''}
@@ -2536,6 +2549,7 @@ body { margin:0; background:#dfe3e8; font-family:'Sarabun',sans-serif; color:#00
 .grid td.hn { font-weight:600; } .grid td.hn small { font-weight:400; font-size:10px; }
 .grid td.pos { color:#b00020; font-weight:700; }
 .grid tr.empty td { color:#777; }
+.grid tr.total td { font-weight:700; background:#eee; border-top:1.6px solid #000; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .sumwrap { display:flex; justify-content:space-between; margin-top:6mm; gap:6mm; }
 .sumcol { flex:1; } .sumcol:last-child { flex:.8; }
 .sline { display:flex; align-items:flex-end; gap:4px; margin:2.2mm 0; font-weight:600; white-space:nowrap; }
