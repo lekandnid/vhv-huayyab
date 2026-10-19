@@ -130,6 +130,10 @@
   .multi-pick button::before { content:'☐ '; }
   .multi-pick button.on { background:var(--primary) !important; color:#fff !important; border-color:var(--primary) !important; font-weight:700; }
   .multi-pick button.on::before { content:'✓ '; }
+  .bp-pair { display:flex; align-items:center; gap:6px; }
+  .bp-pair input { flex:1; min-width:0; text-align:center; font-size:18px; }
+  .bp-slash { font-size:22px; font-weight:700; color:var(--text-muted); }
+  .bp-note { display:block; color:#b36b00; font-weight:600; font-size:13px; min-height:0; margin-top:3px; }
 </style>
 </head>
 <body>
@@ -164,7 +168,7 @@
     </div>
     <div id="scr-body-calc" class="scr-calc"></div>
     <div class="form-row">
-      <div class="form-group"><label>❤️ ความดัน (mmHg)</label><input type="text" inputmode="numeric" id="scr-bp" placeholder="เช่น 120/80" oninput="updateScreenCalc()"></div>
+      <div class="form-group"><label>❤️ ความดัน (mmHg)</label><div class="bp-pair"><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="scr-bp-sys" placeholder="ตัวบน" oninput="bpInput('scr-bp', 'sys'); updateScreenCalc()"><span class="bp-slash">/</span><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="scr-bp-dia" placeholder="ตัวล่าง" oninput="bpInput('scr-bp', 'dia'); updateScreenCalc()"></div><input type="hidden" id="scr-bp"><small class="bp-note" id="scr-bp-note"></small></div>
       <div class="form-group"><label>🩸 ค่าน้ำตาล (mg/dL)</label><input type="number" inputmode="numeric" id="scr-dtx" placeholder="เช่น 95" oninput="updateScreenCalc()"></div>
     </div>
     <div class="seg-grid">
@@ -637,7 +641,7 @@
       <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #e9ecef;">
         <strong style="display:block; margin-bottom:10px;">📊 สัญญาณชีพ</strong>
         <div class="form-row">
-          <div class="form-group"><label>ความดัน (BP mmHg)</label><input type="text" id="visit-bp" placeholder="เช่น 120/80" oninput="updateTriageSuggestion()"></div>
+          <div class="form-group"><label>ความดัน (BP mmHg)</label><div class="bp-pair"><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="visit-bp-sys" placeholder="ตัวบน" oninput="bpInput('visit-bp', 'sys'); updateTriageSuggestion()"><span class="bp-slash">/</span><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="visit-bp-dia" placeholder="ตัวล่าง" oninput="bpInput('visit-bp', 'dia'); updateTriageSuggestion()"></div><input type="hidden" id="visit-bp"><small class="bp-note" id="visit-bp-note"></small></div>
           <div class="form-group"><label>น้ำตาล (DTX mg/dL)</label><input type="text" id="visit-dtx" placeholder="เช่น 110" oninput="updateTriageSuggestion()"></div>
         </div>
       </div>
@@ -1120,6 +1124,30 @@
   }
 
   /* ========== Triage suggestion ========== */
+  /* ----- ช่องความดัน 2 ช่อง (ตัวบน / ตัวล่าง) ใช้แป้นตัวเลข → รวมเป็น "120/80" ในช่องซ่อน ----- */
+  function bpInput(pre, part) {
+    const s = document.getElementById(pre + '-sys'), d = document.getElementById(pre + '-dia');
+    [s, d].forEach(el => { const v = el.value.replace(/\D/g, '').slice(0, 3); if (el.value !== v) el.value = v; });
+    if (part === 'sys' && (s.value.length === 3 || (s.value.length === 2 && parseInt(s.value[0]) >= 3))) d.focus();   // ครบ 3 หลัก (หรือ 2 หลักแบบ 90) → ข้ามไปตัวล่าง
+    const hid = document.getElementById(pre);
+    hid.value = (s.value || d.value) ? `${s.value}/${d.value}` : '';
+    const note = document.getElementById(pre + '-note');
+    if (note) note.textContent = (s.value && d.value) ? '' : (s.value || d.value) ? '⚠️ กรอกให้ครบทั้งตัวบนและตัวล่าง' : '';
+  }
+  function bpSet(pre, val) {
+    const m = String(val || '').match(/(\d{2,3})\s*[\/\-]\s*(\d{2,3})/);
+    const s = document.getElementById(pre + '-sys'), d = document.getElementById(pre + '-dia');
+    if (!s || !d) return;
+    s.value = m ? m[1] : ''; d.value = m ? m[2] : '';
+    document.getElementById(pre).value = m ? `${m[1]}/${m[2]}` : '';
+    const note = document.getElementById(pre + '-note'); if (note) note.textContent = '';
+  }
+  function bpComplete(pre) {
+    const s = document.getElementById(pre + '-sys').value, d = document.getElementById(pre + '-dia').value;
+    if ((s && !d) || (!s && d)) { alert('❤️ ความดัน: กรุณากรอกให้ครบทั้งตัวบนและตัวล่าง (เช่น 120 / 80)'); (s ? document.getElementById(pre + '-dia') : document.getElementById(pre + '-sys')).focus(); return false; }
+    if (s && d && parseInt(s) <= parseInt(d)) return confirm(`ความดัน ${s}/${d}: ตัวบนน้อยกว่าหรือเท่ากับตัวล่าง อาจกรอกสลับช่อง\nกด OK = บันทึกต่อ / Cancel = กลับไปแก้`);
+    return true;
+  }
   function evaluateTriage(bpStr, dtxStr) {
     const reasons = []; let level = 0;
     const bp = String(bpStr || '').match(/(\d{2,3})\s*[\/\-]\s*(\d{2,3})/);
@@ -1755,7 +1783,7 @@
   }
   function closeVisitModal() {
     document.getElementById('visit-modal').classList.add('hidden');
-    document.getElementById('visit-bp').value = ''; document.getElementById('visit-dtx').value = '';
+    bpSet('visit-bp', ''); document.getElementById('visit-dtx').value = '';
     document.getElementById('visit-symptoms').value = ''; document.getElementById('visit-next').value = '';
     document.getElementById('visit-triage').selectedIndex = 0; document.getElementById('visit-adl').selectedIndex = 0;
     document.getElementById('visit-meds-taken').selectedIndex = 0;
@@ -1766,6 +1794,7 @@
   function saveVisitLog(e) {
     e.preventDefault();
     const tv = document.getElementById('visit-triage').value;
+    if (!bpComplete('visit-bp')) return;
     const sug = evaluateTriage(document.getElementById('visit-bp').value, document.getElementById('visit-dtx').value);
     if (sug.level === 2 && !tv.includes('🔴')) { if (!confirm("⚠️ ค่าที่กรอกอยู่ในเกณฑ์ 'ฉุกเฉิน' แต่เลือกระดับต่ำกว่า — ยืนยันบันทึก?")) return; }
     else if (sug.level === 1 && tv.includes('🟢')) { if (!confirm("⚠️ ค่าที่กรอกควร 'เฝ้าระวัง' แต่เลือกระดับ 'ปกติ' — ยืนยันบันทึก?")) return; }
@@ -2946,7 +2975,8 @@ ${pagesHtml}
     const val = k => (src[k] !== undefined && src[k] !== '') ? src[k] : (carry[k] || '');
     document.getElementById('scr-date').value = cur && cur.screen_date ? dateToISO(cur.screen_date) : todayISO();
     ['treat_place', 'health_right', 'height'].forEach(k => document.getElementById('scr-' + k).value = val(k));
-    ['weight', 'waist', 'bp', 'dtx'].forEach(k => document.getElementById('scr-' + k).value = src[k] || '');
+    ['weight', 'waist', 'dtx'].forEach(k => document.getElementById('scr-' + k).value = src[k] || '');
+    bpSet('scr-bp', src.bp || '');
     SCR_SEG.forEach(k => segSet(k, SCR_CARRY_SEG.includes(k) ? val(k) : (src[k] || '')));
     const fam = String(val('family_hx') || '').split(',').map(x => x.trim());
     document.querySelectorAll('#scr-family button').forEach(b => b.classList.toggle('on', fam.includes(b.dataset.v)));
@@ -3005,6 +3035,7 @@ ${pagesHtml}
   }
   function saveScreening() {
     const o = currentScreenValues();
+    if (!bpComplete('scr-bp')) return;
     const filled = ['weight', 'height', 'waist', 'bp', 'dtx', 'smoke', 'alcohol', 'exercise', 'q2_sad', 'q2_bored', 'oral_pain'].some(k => o[k] !== '');
     if (!filled) { alert('ยังไม่ได้กรอกผลคัดกรอง'); return; }
     if ((o.q2_sad === 'มี' || o.q2_bored === 'มี') && o.q9_score === '' && !confirm('2Q ผลบวก แต่ยังทำ 9Q ไม่ครบ 9 ข้อ — บันทึกไว้ก่อนหรือไม่?')) return;
@@ -3257,7 +3288,7 @@ ${pagesHtml}
       ws.pageSetup.orientation = 'landscape';
       ws.pageSetup.fitToPage = true; ws.pageSetup.fitToWidth = 1; ws.pageSetup.fitToHeight = 0;
       ws.pageSetup.horizontalCentered = true; ws.pageSetup.verticalCentered = false;   // หน้าสุดท้ายชิดบน ไม่ลอยกลางแผ่น
-      ws.pageSetup.margins = { left: 0.18, right: 0.18, top: 0.2, bottom: 0.2, header: 0.08, footer: 0.08 };
+      ws.pageSetup.margins = { left: 0.18, right: 0.18, top: 0.4, bottom: 0.4, header: 0.15, footer: 0.15 };   // บน-ล่าง ≈10 มม. กันเส้นล่างสุดโดนตัด
       ws.pageSetup.printArea = `A1:${ws.getColumn(ws.columnCount).letter}${lastRow}`;
       if (!ws.pageSetup.printTitlesRow && headRows.length) ws.pageSetup.printTitlesRow = `${headRows[0]}:${headRows[headRows.length - 1]}`;
       const out = await wb.xlsx.writeBuffer();
