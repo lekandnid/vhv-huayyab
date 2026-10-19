@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <title>ระบบดูแลลูกบ้าน อสม. ห้วยยาบ</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   :root { --primary:#0066cc; --primary-hover:#005bb5; --secondary:#f4f7f6; --danger:#dc3545; --warning:#ffc107; --success:#28a745; --text-main:#333; --text-muted:#6c757d; --border-color:#dee2e6; --bg-white:#fff; --fs:15px; }
@@ -101,7 +101,8 @@
   .flt-bar select { padding:6px 8px; max-width:220px; }
   .flt-label { font-weight:700; }
   .flt-count { font-size:13px; color:var(--primary); font-weight:700; }
-  .btn-scr { background:#6f42c1 !important; color:#fff !important; }
+  .btn-scr, body.vhv-mode .btn-scr { background:#E39FF6 !important; color:#5B1A73 !important; border:1.5px solid #E39FF6 !important; font-weight:600; }
+  .btn-scr:hover, .btn-scr:active, body.vhv-mode .btn-scr:hover, body.vhv-mode .btn-scr:active { background:#D884F2 !important; border-color:#D884F2 !important; }
   .seg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px 14px; margin:6px 0 10px; }
   .seg-grid label { display:block; font-weight:600; font-size:14px; margin-bottom:4px; }
   .seg { display:inline-flex; flex-wrap:wrap; border:1px solid #adb5bd; border-radius:8px; overflow:hidden; }
@@ -134,6 +135,119 @@
   .bp-pair input { flex:1; min-width:0; text-align:center; font-size:18px; }
   .bp-slash { font-size:22px; font-weight:700; color:var(--text-muted); }
   .bp-note { display:block; color:#b36b00; font-weight:600; font-size:13px; min-height:0; margin-top:3px; }
+
+  /* ===================== ธีมใหม่ฝั่ง อสม. (ฟ้ากลาง) ===================== */
+  body.vhv-mode {
+    --primary:#1E6FB8; --primary-hover:#165A97; --secondary:#F4F7FA; --border-color:#D5E0EA;
+    --text-main:#17222D; --text-muted:#5B6B7A; --success:#2E8B57; --leaf:#E4EFF9; --amber:#B86E00; --amber-bg:#FFF3DC; --red:#B8322A; --red-bg:#FBE7E5;
+    font-family:'IBM Plex Sans Thai','Sarabun',sans-serif; padding:0 14px 100px; font-size:max(var(--fs),16px);
+  }
+  body.vhv-mode input, body.vhv-mode select, body.vhv-mode textarea, body.vhv-mode button { font-family:inherit; }
+  body.vhv-mode input, body.vhv-mode select, body.vhv-mode textarea { border-radius:12px; border:1.5px solid var(--border-color); font-size:17px; }
+  body.vhv-mode input:focus, body.vhv-mode select:focus, body.vhv-mode textarea:focus { box-shadow:0 0 0 3px rgba(30,111,184,.18); }
+  body.vhv-mode button { border-radius:12px; }
+  body.vhv-mode #app-section { max-width:760px; margin:0 auto; }
+  body.vhv-mode .header-bar { border-bottom:none; margin:0 0 4px; padding:10px 0 4px; }
+  body.vhv-mode .header-bar h3 { display:none; }
+  body.vhv-mode .header-bar .fs-group button { border-radius:8px; }
+  body.vhv-mode .white-panel { border-radius:18px; box-shadow:none; padding:16px; }
+  body.vhv-mode h2, body.vhv-mode h3, body.vhv-mode h4 { color:var(--text-main); }
+  body.vhv-mode .search-box { border:1.5px solid var(--border-color); border-radius:14px; }
+  body.vhv-mode .house-card { border-radius:18px; }
+  body.vhv-mode .house-card-head { background:var(--leaf); color:#124878; }
+  body.vhv-mode .badge-head { background:var(--leaf); color:#124878; border-color:#BFD3E8; }
+  body.vhv-mode .btn-call { background:var(--primary); border-radius:12px; }
+  body.vhv-mode .flt-bar { border-radius:14px; background:#fff; }
+  body.vhv-mode .chip { border-color:var(--border-color); background:#fff; color:var(--text-main); }
+  /* เมนูล่าง */
+  #vhv-nav { position:fixed; left:0; right:0; bottom:0; z-index:900; background:#fff; border-top:1px solid var(--border-color); display:flex; justify-content:center; padding:6px 6px calc(8px + env(safe-area-inset-bottom)); }
+  #vhv-nav button { flex:1; max-width:170px; background:none !important; color:var(--text-muted) !important; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0 !important; font-size:13px; font-weight:500; box-shadow:none !important; }
+  #vhv-nav i { font-style:normal; font-size:21px; width:58px; height:30px; border-radius:15px; display:grid; place-items:center; transition:background .2s; }
+  #vhv-nav button.active-tab { color:#124878 !important; font-weight:700; }
+  #vhv-nav button.active-tab i { background:var(--leaf); }
+  #vhv-nav button:focus-visible { outline:3px solid var(--primary); outline-offset:-3px; }
+  /* หน้าแรก */
+  .hm-hello { padding:6px 2px 14px; }
+  .hm-hello h1 { font-size:27px; font-weight:700; margin:0; line-height:1.25; color:var(--text-main); }
+  .hm-hello p { margin:3px 0 0; color:var(--text-muted); font-size:16px; line-height:1.5; }
+  .hm-sync { display:inline-flex; align-items:center; gap:6px; font-size:13px; background:var(--leaf); color:#124878; padding:3px 11px; border-radius:999px; margin-top:8px; font-weight:500; }
+  .hm-sync.warn { background:var(--amber-bg); color:#7A4A00; }
+  .hm-sync b { width:8px; height:8px; border-radius:50%; background:#2E9B62; }
+  .hm-sync.warn b { background:var(--amber); }
+  .hm-h { font-size:19px; font-weight:700; margin:6px 2px 10px; color:var(--text-main); }
+  .hm-route { background:#fff; border:1px solid var(--border-color); border-radius:18px; overflow:hidden; margin-bottom:18px; }
+  .hm-stop { display:flex; gap:12px; align-items:center; width:100%; text-align:left; background:#fff !important; color:var(--text-main) !important; border:none; border-top:1px solid var(--border-color) !important; border-radius:0 !important; padding:14px 14px 14px 12px !important; box-shadow:none !important; white-space:normal; font-weight:400; }
+  .hm-stop:first-child { border-top:none !important; }
+  .hm-stop:hover { background:#F8FBFE !important; }
+  .hm-dot { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:21px; flex:none; }
+  .hm-t { flex:1; min-width:0; }
+  .hm-t b { display:block; font-size:17px; font-weight:600; line-height:1.3; }
+  .hm-t span { font-size:14.5px; color:var(--text-muted); }
+  .hm-n { font-size:22px; font-weight:700; min-width:30px; text-align:right; }
+  .hm-stop.red .hm-dot { background:var(--red-bg); } .hm-stop.red .hm-n { color:var(--red); }
+  .hm-stop.amb .hm-dot { background:var(--amber-bg); } .hm-stop.amb .hm-n { color:var(--amber); }
+  .hm-stop.grn .hm-dot { background:var(--leaf); } .hm-stop.grn .hm-n { color:var(--primary); }
+  .hm-stop.done .hm-n { font-size:18px; color:var(--success); }
+  .hm-bar { height:7px; border-radius:4px; background:#E6ECF2; margin-top:7px; overflow:hidden; }
+  .hm-bar i { display:block; height:100%; background:var(--primary); border-radius:4px; }
+  .hm-mini { background:#fff; border:1px solid var(--border-color); border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+  .hm-mini b { font-size:16.5px; font-weight:600; }
+  .hm-mini span { display:block; font-size:14px; color:var(--text-muted); }
+  .hm-more { background:#fff; border:1px solid var(--border-color); border-radius:18px; padding:12px 16px; margin:14px 0; }
+  .hm-more > summary { cursor:pointer; font-weight:700; font-size:16px; }
+  .hm-more[open] > summary { margin-bottom:10px; }
+  /* ปุ่มลอยเพิ่มลูกบ้าน */
+  .res-fab { position:fixed; right:max(16px, calc(50vw - 364px)); bottom:96px; z-index:901; padding:14px 18px !important; font-size:16px !important; border-radius:18px !important; background:var(--primary) !important; box-shadow:0 6px 16px rgba(18,72,120,.35) !important; }
+  /* ฟอร์มลูกบ้านแบบทีละขั้น */
+  .rsheet { position:fixed; inset:0; z-index:1040; background:var(--secondary); overflow-y:auto; }
+  .rsheet form { max-width:760px; margin:0 auto; padding:10px 16px 110px; min-height:100%; }
+  .rs-head { display:flex; align-items:center; gap:10px; padding:6px 0 14px; position:sticky; top:0; background:var(--secondary); z-index:2; }
+  .rs-head h3 { flex:1; margin:0; font-size:23px; color:var(--text-main); }
+  .rs-x { width:42px; height:42px; padding:0 !important; background:#fff !important; color:var(--text-main) !important; border:1px solid var(--border-color) !important; font-size:18px !important; }
+  .rs-clear { background:none !important; color:var(--text-muted) !important; font-weight:500 !important; padding:6px 8px !important; }
+  .rs-steps { display:flex; gap:6px; margin-bottom:16px; }
+  .rs-st { flex:1; }
+  .rs-st .ln { height:5px; border-radius:3px; background:#DCE4EC; }
+  .rs-st p { font-size:13px; color:var(--text-muted); margin:6px 0 0; font-weight:500; }
+  .rs-st.on .ln, .rs-st.done .ln { background:var(--primary); }
+  .rs-st.on p { color:#124878; font-weight:700; }
+  .rf-step { display:none; } .rf-step.on { display:block; }
+  .rf-step .form-row { flex-direction:column; gap:0; }
+  .rf-step .form-group { max-width:none !important; margin-bottom:14px; }
+  .rf-step label { font-weight:600; font-size:15px; }
+  .rs-banner { background:var(--leaf); color:#124878; border-radius:12px; padding:10px 14px; font-weight:600; margin-bottom:12px; }
+  .rs-foot { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--border-color); padding:12px max(16px, calc(50vw - 364px)) calc(14px + env(safe-area-inset-bottom)); display:flex; gap:10px; z-index:3; }
+  .rs-foot button { flex:1; padding:15px !important; font-size:17px !important; border-radius:14px !important; }
+  .rs-foot .btn-outline { flex:.6; }
+  .rf-missing { border-color:var(--red) !important; box-shadow:0 0 0 3px rgba(184,50,42,.15) !important; }
+  @media (prefers-reduced-motion: reduce) { #vhv-nav i { transition:none; } }
+  /* แถบบนแบบกะทัดรัด (ชื่อ/สถานะอยู่ในหน้าแรกแล้ว) */
+  body.vhv-mode .header-bar { flex-direction:row; flex-wrap:nowrap; justify-content:flex-end; align-items:center; }
+  body.vhv-mode .header-bar > div:first-child, body.vhv-mode #sync-badge { display:none; }
+  body.vhv-mode .header-bar > div:last-child { flex-wrap:nowrap; gap:6px; }
+  body.vhv-mode .header-bar button { padding:7px 11px; font-size:13px; }
+  body.vhv-mode .fs-group button { padding:6px 9px; }
+  body.vhv-mode button[onclick^="openVisitModalByCid"] { background:var(--primary) !important; color:#fff !important; }
+  body.vhv-mode .btn-warn { background:#fff; color:#7A4A00; border:1.5px solid #E7C27A; }
+  /* .btn-scr: สีม่วง (กำหนดด้านบน) */
+  body.vhv-mode .member-row > div:last-child { display:flex; flex-wrap:wrap; gap:6px; }
+  .flt-wrap { background:#fff; border:1px solid var(--border-color); border-radius:14px; padding:10px 14px; margin-bottom:12px; }
+  .flt-wrap > summary { cursor:pointer; font-weight:600; }
+  .flt-wrap > summary span { font-weight:500; color:var(--primary); font-size:14px; }
+  .flt-wrap .flt-bar { border:none; padding:10px 0 2px; margin:0; background:none; }
+  .btn-row { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; }
+  @media (max-width:600px) { .btn-row { flex-basis:100%; align-items:stretch; } .btn-row button { flex:1 1 140px; white-space:nowrap; } }
+  @media (max-width:430px) {
+    body.vhv-mode #btn-change-pass { font-size:0 !important; } body.vhv-mode #btn-change-pass::before { content:'🔑 รหัสผ่าน'; font-size:13px; }
+    body.vhv-mode .header-bar > div:last-child { gap:5px; }
+  }
+  body.vhv-mode .member-row { flex-direction:column; align-items:stretch; gap:8px; }
+  body.vhv-mode .member-row > div:last-child { justify-content:flex-start; }
+  /* กันล้นจอบนมือถือ */
+  #report-print { max-width:100%; overflow-x:auto; box-sizing:border-box; overflow-wrap:anywhere; }
+  #report-print > div[style*="space-around"] { flex-wrap:wrap; gap:24px; }
+  #larva-modal .white-panel, #screen-modal .white-panel, #map-modal .white-panel { box-sizing:border-box; max-width:calc(100vw - 16px); }
+  @media (max-width:430px) { body.vhv-mode .form-row .form-group { min-width:100%; } body.vhv-mode #report-print { padding:12px !important; } }
 </style>
 </head>
 <body>
@@ -154,7 +268,11 @@
     <div class="form-row">
       <div class="form-group"><label>🏥 สถานที่รักษา</label><input type="text" id="scr-treat_place" list="scr-place-list" placeholder="เช่น รพ.สต.ห้วยยาบ">
         <datalist id="scr-place-list"><option value="รพ.สต.ห้วยยาบ"><option value="รพ.บ้านธิ"><option value="รพ.ลำพูน"><option value="คลินิกเอกชน"></datalist></div>
-      <div class="form-group"><label>💳 สิทธิบัตร</label><select id="scr-health_right"><option value="">-- เลือก --</option><option>บัตรทอง (UC)</option><option>ประกันสังคม</option><option>ข้าราชการ/เบิกได้</option><option>รัฐวิสาหกิจ</option><option>อปท.</option><option>อื่นๆ</option></select></div>
+      <div class="form-group"><label>💳 สิทธิบัตร</label><select id="scr-health_right" onchange="ssToggle()"><option value="">-- เลือก --</option><option>บัตรทอง (UC)</option><option>ประกันสังคม</option><option>ข้าราชการ/เบิกได้</option><option>รัฐวิสาหกิจ</option><option>อปท.</option><option>อื่นๆ</option></select></div>
+      <div class="form-group hidden" id="scr-ss-wrap"><label>🏥 โรงพยาบาลตามสิทธิประกันสังคม</label>
+        <select id="scr-ss-hosp" onchange="ssToggle()"></select>
+        <input type="text" id="scr-ss-other" class="hidden" placeholder="พิมพ์ชื่อโรงพยาบาล เช่น รพ.หริภุญชัย เมโมเรียล" style="margin-top:8px;">
+      </div>
     </div>
     <div class="seg-grid">
       <div><label>🩸 กรุ๊ปเลือด</label><div class="seg" data-name="blood_group"><button type="button" data-v="A" onclick="segPick(this)">A</button><button type="button" data-v="B" onclick="segPick(this)">B</button><button type="button" data-v="AB" onclick="segPick(this)">AB</button><button type="button" data-v="O" onclick="segPick(this)">O</button><button type="button" data-v="ไม่ทราบ" onclick="segPick(this)">ไม่ทราบ</button></div></div>
@@ -439,22 +557,47 @@
 
     <!-- VHV VIEW -->
     <div id="vhv-view" class="hidden">
-      <div class="admin-tabs">
-        <button type="button" id="tab-btn-vtask" class="active-tab" onclick="switchVHVTab('vtask')">📋 ภารกิจ & ทะเบียน</button>
-        <button type="button" id="tab-btn-vlarva" onclick="switchVHVTab('vlarva')">🦟 ลูกน้ำยุงลาย</button>
-        <button type="button" id="tab-btn-vreport" onclick="switchVHVTab('vreport')">📄 รายงานเดือน</button>
+      <nav id="vhv-nav" aria-label="เมนูหลัก">
+        <button type="button" id="tab-btn-vhome" class="active-tab" onclick="switchVHVTab('vhome')"><i>🏠</i><span>หน้าแรก</span></button>
+        <button type="button" id="tab-btn-vtask" onclick="switchVHVTab('vtask')"><i>👥</i><span>ลูกบ้าน</span></button>
+        <button type="button" id="tab-btn-vlarva" onclick="switchVHVTab('vlarva')"><i>🦟</i><span>ลูกน้ำ</span></button>
+        <button type="button" id="tab-btn-vreport" onclick="switchVHVTab('vreport')"><i>📄</i><span>รายงาน</span></button>
+      </nav>
+
+      <div id="tab-vhome">
+        <div class="hm-hello">
+          <h1 id="hm-hi">สวัสดี</h1>
+          <p id="hm-date"></p>
+          <span id="hm-sync" class="hm-sync"></span>
+        </div>
+        <h2 class="hm-h">วันนี้ต้องทำ</h2>
+        <div id="hm-route" class="hm-route"></div>
+        <div id="hm-follow"></div>
+        <details class="hm-more" id="hm-visits">
+          <summary>🩺 รายละเอียดนัดเยี่ยมบ้าน</summary>
+          <div id="vhv-task-list"></div>
+        </details>
+        <div id="vhv-appt-panel"></div>
+        <div id="vhv-dq-panel"></div>
       </div>
 
-      <div id="tab-vtask" class="white-panel" style="border-top-left-radius:0;">
-        <div class="white-panel" style="background:#f0f7ff; border-left:5px solid var(--primary); box-shadow:none;">
-          <h4 style="margin-bottom:15px; font-size:18px;">📋 ภารกิจเยี่ยมบ้าน</h4>
-          <div id="vhv-task-list"></div>
-          <div id="vhv-appt-panel"></div>
-        </div>
-        <div id="vhv-dq-panel"></div>
+      <div id="tab-vtask" class="white-panel hidden">
 
-        <form id="resident-form" class="white-panel" onsubmit="saveResident(event)" style="box-shadow:none; border:1px solid var(--border-color);">
-          <h4 style="margin-bottom:15px; border-bottom:2px solid var(--primary); display:inline-block; padding-bottom:5px;">📝 แฟ้มทะเบียนลูกบ้าน</h4>
+        <div id="res-sheet" class="rsheet hidden" role="dialog" aria-modal="true" aria-labelledby="rs-title">
+        <form id="resident-form" novalidate onsubmit="saveResident(event)">
+          <div class="rs-head">
+            <button type="button" class="rs-x" onclick="closeResSheet()" aria-label="ปิด">✕</button>
+            <h3 id="rs-title">เพิ่มลูกบ้าน</h3>
+            <button type="button" class="rs-clear" onclick="clearResForm(); rfGo(1)">ล้างฟอร์ม</button>
+          </div>
+          <div class="rs-steps">
+            <div class="rs-st" data-s="1"><div class="ln"></div><p>1 ข้อมูลบุคคล</p></div>
+            <div class="rs-st" data-s="2"><div class="ln"></div><p>2 บ้านและพิกัด</p></div>
+            <div class="rs-st" data-s="3"><div class="ln"></div><p>3 สุขภาพและนัด</p></div>
+          </div>
+          <div id="rs-banner" class="rs-banner hidden"></div>
+          <div class="rs-body">
+            <div class="rf-step" data-step="1">
           <div class="form-row">
             <div class="form-group"><label>เลขบัตรประชาชน (13 หลัก) *</label><input type="text" inputmode="numeric" id="res-citizen-id" maxlength="13" required oninput="checkCidDupLive()"><button type="button" id="btn-change-cid" class="btn-warn btn-small hidden" style="margin-top:5px;" onclick="startChangeCid()">✏️ แก้เลขบัตร</button><small id="cid-dup-hint" style="display:block; color:var(--danger); font-weight:600; margin-top:3px;"></small></div>
             <div class="form-group"><label>ชื่อ-นามสกุล *</label><input type="text" id="res-name" required></div>
@@ -474,18 +617,12 @@
             <div class="form-group" style="max-width:80px;"><label>อายุ</label><input type="number" id="res-age" readonly></div>
             <div class="form-group"><label>เบอร์โทร</label><input type="tel" id="res-phone" placeholder="08xxxxxxxx"></div>
           </div>
+            </div>
+            <div class="rf-step" data-step="2">
           <div class="form-row">
             <div class="form-group"><label>บ้านเลขที่ *</label><input type="text" id="res-house" required oninput="tryAutoFillCoords()" onblur="tryAutoFillCoords()"></div>
             <div class="form-group"><label>หมู่ที่ *</label><input type="text" inputmode="numeric" id="res-moo" required oninput="tryAutoFillCoords()" onblur="tryAutoFillCoords()"></div>
             <div class="form-group"><label>สถานะในบ้าน *</label><select id="res-role" required><option value="เจ้าบ้าน">เจ้าบ้าน</option><option value="ผู้อาศัย" selected>ผู้อาศัย</option></select></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>กลุ่มการดูแล *</label><select id="res-group" required><option value="บุคคลทั่วไป">บุคคลทั่วไป</option><option value="ผู้สูงอายุ">ผู้สูงอายุ</option><option value="ผู้ป่วยติดเตียง">ผู้ป่วยติดเตียง</option><option value="ผู้ป่วยโรคเรื้อรัง (NCDs)">ผู้ป่วยโรคเรื้อรัง (NCDs)</option><option value="หญิงตั้งครรภ์/เด็กแรกเกิด">หญิงตั้งครรภ์/เด็กแรกเกิด</option></select></div>
-            <div class="form-group"><label>โรคประจำตัว</label><input type="text" id="res-disease" placeholder="ถ้าไม่มีใส่ -"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group" style="flex:2;"><label>💊 ยาประจำ</label><input type="text" id="res-meds" placeholder="เช่น Metformin 500 mg เช้า-เย็น"></div>
-            <div class="form-group"><label>🏥 นัด รพ. ครั้งถัดไป</label><input type="date" id="res-hosp-appt"></div>
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -499,19 +636,35 @@
               <small id="coords-hint" style="color:var(--text-muted); font-size:13px; display:block; margin-top:6px;"></small>
             </div>
           </div>
-          <div style="margin-top:15px; padding-top:15px; border-top:1px solid #eee;">
-            <button type="submit">💾 บันทึก</button>
-            <button type="button" class="btn-outline" style="margin-left:5px;" onclick="clearResForm()">ล้างฟอร์ม</button>
+            </div>
+            <div class="rf-step" data-step="3">
+          <div class="form-row">
+            <div class="form-group"><label>กลุ่มการดูแล *</label><select id="res-group" required><option value="บุคคลทั่วไป">บุคคลทั่วไป</option><option value="ผู้สูงอายุ">ผู้สูงอายุ</option><option value="ผู้ป่วยติดเตียง">ผู้ป่วยติดเตียง</option><option value="ผู้ป่วยโรคเรื้อรัง (NCDs)">ผู้ป่วยโรคเรื้อรัง (NCDs)</option><option value="หญิงตั้งครรภ์/เด็กแรกเกิด">หญิงตั้งครรภ์/เด็กแรกเกิด</option></select></div>
+            <div class="form-group"><label>โรคประจำตัว</label><input type="text" id="res-disease" placeholder="ถ้าไม่มีใส่ -"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:2;"><label>💊 ยาประจำ</label><input type="text" id="res-meds" placeholder="เช่น Metformin 500 mg เช้า-เย็น"></div>
+            <div class="form-group"><label>🏥 นัด รพ. ครั้งถัดไป</label><input type="date" id="res-hosp-appt"></div>
+          </div>
+            </div>
+          </div>
+          <div class="rs-foot">
+            <button type="button" class="btn-outline" id="rf-back" onclick="rfStep(-1)">ย้อนกลับ</button>
+            <button type="button" id="rf-next" onclick="rfStep(1)">ถัดไป</button>
+            <button type="submit" id="rf-save">💾 บันทึกลูกบ้าน</button>
           </div>
         </form>
+        </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <h4 style="margin:0; font-size:18px;">🏠 รายชื่อลูกบ้าน</h4>
+          <h4 style="margin:0; font-size:22px;">ลูกบ้าน <small id="res-count" style="font-size:14px; font-weight:500; color:var(--text-muted);"></small></h4>
           <button type="button" class="btn-outline btn-small" id="toggle-house-btn" onclick="toggleHouseView()">🏠 มุมมองรายบ้าน</button>
-          <button type="button" class="btn-success btn-small" onclick="exportExcel('vhv')">📥 Excel ลูกบ้าน</button>
         </div>
-        <input type="text" id="search-box" class="search-box" style="margin-top:10px;" placeholder="🔍 ค้นหา..." onkeyup="renderResidents()">
+        <input type="text" id="search-box" class="search-box" style="margin-top:10px;" placeholder="🔍 ค้นชื่อ บ้านเลขที่ กลุ่ม หรือโรค" onkeyup="renderResidents()">
+        <details class="flt-wrap" id="vf-wrap">
+        <summary>🔎 ตัวกรองและส่งออก Excel <span id="vf-flt-sum"></span></summary>
         <div class="flt-bar">
+          <button type="button" class="btn-success btn-small" onclick="exportExcel('vhv')">📥 Excel ลูกบ้านทั้งหมด</button>
           <span class="flt-label">🎂 อายุ</span>
           <input type="number" inputmode="numeric" id="vf-age-min" placeholder="ตั้งแต่" min="0" max="120" oninput="renderResidents()">
           <span>ถึง</span>
@@ -534,6 +687,7 @@
           <button type="button" class="btn-success btn-small" onclick="exportFilteredResidents('vhv')">📥 Excel ตามตัวกรอง</button>
           <button type="button" class="btn-small btn-scr" onclick="exportForm35('vhv')">📥 แบบฟอร์ม 35 ปีขึ้นไป (F4)</button>
         </div>
+        </details>
 
         <div class="table-responsive" id="resident-table-wrap">
           <table>
@@ -543,6 +697,7 @@
         </div>
         <div id="resident-house-wrap" class="hidden"></div>
       </div>
+      <button type="button" id="res-fab" class="res-fab hidden" onclick="openNewResident()">➕ เพิ่มลูกบ้าน</button>
 
       <div id="tab-vlarva" class="white-panel hidden" style="border-top-left-radius:0;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
@@ -585,7 +740,7 @@
           <h4 style="margin-bottom:15px; font-size:18px;">📄 รายงานประจำเดือน</h4>
           <div class="form-row" style="margin-bottom:15px;">
             <div class="form-group"><label>เลือกเดือน</label><input type="month" id="report-month" onchange="buildMonthlyReport()"></div>
-            <div class="form-group" style="display:flex; align-items:flex-end; gap:8px;">
+            <div class="form-group btn-row">
               <button type="button" onclick="buildMonthlyReport()">🔄 สร้าง</button>
               <button type="button" class="btn-warn" onclick="window.print()">🖨️ พิมพ์ / PDF</button>
               <button type="button" class="btn-success" onclick="exportExcel('vhv')">📥 ส่งออก Excel</button>
@@ -1061,7 +1216,9 @@
     } else {
       document.getElementById('admin-view').classList.add('hidden');
       document.getElementById('vhv-view').classList.remove('hidden');
-      switchVHVTab('vtask');
+      document.body.classList.add('vhv-mode');
+      houseViewMode = true; { const tb = document.getElementById('toggle-house-btn'); if (tb) tb.textContent = '👤 มุมมองรายคน'; }
+      switchVHVTab('vhome');
       renderVHVTasks(); renderResidents();
       loadVillagesFromServer();
     }
@@ -1249,7 +1406,7 @@
     overdue.forEach(t => html += buildCard(t, true));
     upcoming.forEach(t => html += buildCard(t, false));
     container.innerHTML = html;
-    try { renderApptPanel('vhv-appt-panel', myResidents, false); renderVHVDQ(); } catch (e) { console.warn(e); }
+    try { renderApptPanel('vhv-appt-panel', myResidents, false); renderVHVDQ(); renderVHVHome(); } catch (e) { console.warn(e); }
   }
 
   /* ========== Tabs ========== */
@@ -1267,13 +1424,17 @@
     if (tab === 'scr') { renderScreenSummary(); fillForm35Scope(); }
   }
   function switchVHVTab(tab) {
-    ['vtask','vlarva','vreport'].forEach(t => {
+    ['vhome','vtask','vlarva','vreport'].forEach(t => {
       const p = document.getElementById('tab-' + t); const b = document.getElementById('tab-btn-' + t);
       if (p) p.classList.add('hidden'); if (b) b.classList.remove('active-tab');
     });
     const tp = document.getElementById('tab-' + tab); const tb = document.getElementById('tab-btn-' + tab);
     if (tp) tp.classList.remove('hidden'); if (tb) tb.classList.add('active-tab');
     if (tab === 'vlarva') renderVHVLarva();
+    if (tab === 'vhome') renderVHVHome();
+    if (tab === 'vtask') renderResidents();
+    { const fab = document.getElementById('res-fab'); if (fab) fab.classList.toggle('hidden', tab !== 'vtask'); }
+    try { window.scrollTo({ top: 0 }); } catch (e) {}
     if (tab === 'vreport') { const rm = document.getElementById('report-month'); if (rm && !rm.value) rm.value = todayISO().slice(0, 7); buildMonthlyReport(); }
   }
 
@@ -1653,6 +1814,7 @@
         }, 400);
       }
       renderResidents(); renderVHVTasks();
+      try { afterResidentSaved(x); } catch (e) {}
     });
   }
 
@@ -1707,6 +1869,7 @@
   function renderResidents() {
     const tw = document.getElementById('resident-table-wrap'), hw = document.getElementById('resident-house-wrap'), tbody = document.getElementById('resident-table-body');
     let list = getMyFilteredResidents();
+    { const rc = document.getElementById('res-count'); if (rc && currentUser) { const all = dbResidents.filter(r => r.owner === currentUser.id); rc.textContent = `${all.length} คน ${new Set(all.map(r => normMoo(r.moo) + '|' + r.house_no)).size} หลัง`; } }
     if (!houseViewMode) {
       tw.classList.remove('hidden'); hw.classList.add('hidden'); tbody.innerHTML = '';
       if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">ไม่พบข้อมูล</td></tr>`; return; }
@@ -1750,9 +1913,9 @@
           <small class="cid-line">🪪 ${esc(m.citizen_id || '-')}</small><br>
           <small style="color:var(--text-muted);">${esc(m.gender)} • ${esc(ageOf(m) === '' ? '-' : ageOf(m))} ปี • ${esc(m.group)}</small>${dis}<br>${screenChips(m)}</div>
           <div style="white-space:nowrap;">${call}
-            <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(m.citizen_id)}')">📝</button>
+            <button type="button" class="btn-warn btn-small" onclick="editResident('${esc(m.citizen_id)}')">📝 แก้</button>
             <button type="button" class="btn-small" style="background:#0dcaf0; color:#000;" onclick="openVisitModalByCid('${esc(m.citizen_id)}')">🩺 เยี่ยม</button>
-            <button type="button" class="btn-small btn-scr" onclick="openScreening('${esc(m.citizen_id)}')">📋</button>
+            <button type="button" class="btn-small btn-scr" onclick="openScreening('${esc(m.citizen_id)}')">📋 คัดกรอง</button>
           </div></div>`;
       }).join('');
       const cm = mem.find(m => m.coords && m.coords.trim() !== '');
@@ -2857,7 +3020,7 @@ ${pagesHtml}
   }
   function refreshScreenViews() {
     if (!currentUser) return;
-    if (currentUser.role === 'vhv') renderResidents();
+    if (currentUser.role === 'vhv') { renderResidents(); try { renderVHVHome(); } catch (e) {} }
     else { renderAdminAllResidents(); const t = document.getElementById('tab-scr'); if (t && !t.classList.contains('hidden')) renderScreenSummary(); }
   }
 
@@ -2924,6 +3087,7 @@ ${pagesHtml}
     });
     const cnt = document.getElementById(pre + '-flt-count');
     if (cnt) cnt.textContent = (min !== null || max !== null || status || blood) ? `พบ ${out.length} คน` : '';
+    { const sm = document.getElementById(pre + '-flt-sum'); if (sm) sm.textContent = (min !== null || max !== null || status || blood) ? `(กำลังกรอง: พบ ${out.length} คน)` : ''; }
     return out;
   }
   function filteredListFor(mode) {
@@ -2935,6 +3099,44 @@ ${pagesHtml}
   }
 
   /* ----- แบบฟอร์มคัดกรอง ----- */
+  /* ----- สิทธิประกันสังคม + โรงพยาบาลตามสิทธิ (เก็บรวมในช่องสิทธิบัตร เช่น "ประกันสังคม (รพ.ลำพูน)") ----- */
+  const SS_HOSPITALS = ['รพ.ลำพูน', 'รพ.บ้านธิ', 'รพ.ป่าซาง', 'รพ.แม่ทา', 'รพ.บ้านโฮ่ง', 'รพ.ลี้', 'รพ.ทุ่งหัวช้าง', 'รพ.เวียงหนองล่อง'];
+  function splitRight(v) {
+    const s = String(v || '').trim(); const m = s.match(/^ประกันสังคม\s*\((.+)\)\s*$/);
+    return m ? { right: 'ประกันสังคม', hosp: m[1].trim() } : { right: s, hosp: '' };
+  }
+  function ssHospitalList() {
+    const used = dbScreen.map(x => splitRight(x.health_right).hosp).filter(Boolean);
+    return [...new Set([...SS_HOSPITALS, ...used])];
+  }
+  function ssFillOptions(selected) {
+    const sel = document.getElementById('scr-ss-hosp'); const list = ssHospitalList();
+    if (selected && !list.includes(selected)) list.push(selected);
+    sel.innerHTML = '<option value="">-- เลือกโรงพยาบาล --</option>' + list.map(h => `<option value="${esc(h)}">${esc(h)}</option>`).join('') + '<option value="__other">➕ โรงพยาบาลอื่น (พิมพ์ชื่อ)</option>';
+    sel.value = selected || '';
+  }
+  function ssToggle() {
+    const isSS = document.getElementById('scr-health_right').value === 'ประกันสังคม';
+    document.getElementById('scr-ss-wrap').classList.toggle('hidden', !isSS);
+    const other = document.getElementById('scr-ss-hosp').value === '__other';
+    const inp = document.getElementById('scr-ss-other');
+    inp.classList.toggle('hidden', !(isSS && other));
+    if (isSS && other) inp.focus();
+  }
+  function setHealthRight(v) {
+    const sp = splitRight(v);
+    document.getElementById('scr-health_right').value = sp.right;
+    ssFillOptions(sp.hosp);
+    document.getElementById('scr-ss-other').value = '';
+    ssToggle();
+  }
+  function getHealthRight() {
+    const r = document.getElementById('scr-health_right').value;
+    if (r !== 'ประกันสังคม') return r;
+    let h = document.getElementById('scr-ss-hosp').value;
+    if (h === '__other') h = document.getElementById('scr-ss-other').value.replace(/[()]/g, ' ').trim();
+    return h ? `ประกันสังคม (${h})` : 'ประกันสังคม';
+  }
   function openScreening(cid) {
     const r = dbResidents.find(x => x.citizen_id === cid); if (!r) return;
     scrCid = cid;
@@ -2974,7 +3176,8 @@ ${pagesHtml}
     const carry = (!cur && prev) ? prev : {};
     const val = k => (src[k] !== undefined && src[k] !== '') ? src[k] : (carry[k] || '');
     document.getElementById('scr-date').value = cur && cur.screen_date ? dateToISO(cur.screen_date) : todayISO();
-    ['treat_place', 'health_right', 'height'].forEach(k => document.getElementById('scr-' + k).value = val(k));
+    ['treat_place', 'height'].forEach(k => document.getElementById('scr-' + k).value = val(k));
+    setHealthRight(val('health_right'));
     ['weight', 'waist', 'dtx'].forEach(k => document.getElementById('scr-' + k).value = src[k] || '');
     bpSet('scr-bp', src.bp || '');
     SCR_SEG.forEach(k => segSet(k, SCR_CARRY_SEG.includes(k) ? val(k) : (src[k] || '')));
@@ -2990,7 +3193,8 @@ ${pagesHtml}
     const r = dbResidents.find(x => x.citizen_id === scrCid) || {};
     const o = { citizen_id: scrCid, fiscal_year: document.getElementById('scr-m-fy').value, screen_date: isoToThai(document.getElementById('scr-date').value || todayISO()),
       name: r.name || '', house_no: r.house_no || '', moo: r.moo || '', age: ageOf(r), gender: r.gender || '' };
-    ['treat_place', 'health_right', 'weight', 'height', 'waist', 'bp', 'dtx'].forEach(k => o[k] = String(document.getElementById('scr-' + k).value || '').trim());
+    ['treat_place', 'weight', 'height', 'waist', 'bp', 'dtx'].forEach(k => o[k] = String(document.getElementById('scr-' + k).value || '').trim());
+    o.health_right = getHealthRight();
     SCR_SEG.forEach(k => o[k] = segVal(k));
     const w = parseFloat(o.weight), h = parseFloat(o.height);
     o.bmi = (w > 0 && h > 0) ? (w / Math.pow(h / 100, 2)).toFixed(1) : '';
@@ -3092,7 +3296,7 @@ ${pagesHtml}
   /* ----- ส่งออก Excel ----- */
   function screenRowForExport(x) {
     return { 'ปีงบประมาณ': x.fiscal_year, 'วันที่คัดกรอง': toThaiDateStr(x.screen_date), 'เลขบัตรประชาชน': String(x.citizen_id || ''), 'ชื่อ-นามสกุล': x.name, 'เพศ': x.gender, 'อายุ': x.age,
-      'บ้านเลขที่': x.house_no, 'หมู่': x.moo, 'สถานที่รักษา': x.treat_place, 'สิทธิบัตร': x.health_right, 'กรุ๊ปเลือด': x.blood_group, 'Rh': x.blood_rh, 'น้ำหนัก (กก.)': x.weight, 'ส่วนสูง (ซม.)': x.height, 'รอบเอว (ซม.)': x.waist,
+      'บ้านเลขที่': x.house_no, 'หมู่': x.moo, 'สถานที่รักษา': x.treat_place, 'สิทธิบัตร': splitRight(x.health_right).right, 'โรงพยาบาลตามสิทธิ': splitRight(x.health_right).hosp, 'กรุ๊ปเลือด': x.blood_group, 'Rh': x.blood_rh, 'น้ำหนัก (กก.)': x.weight, 'ส่วนสูง (ซม.)': x.height, 'รอบเอว (ซม.)': x.waist,
       'ดัชนีมวลกาย': x.bmi, 'ระดับ BMI': x.bmi_level, 'ความดัน': x.bp, 'ค่าน้ำตาล': x.dtx, 'สูบบุหรี่': x.smoke, 'ดื่มสุรา': x.alcohol, 'ออกกำลังกาย': x.exercise,
       '2Q หดหู่ท้อแท้สิ้นหวัง': x.q2_sad, '2Q เบื่อไม่เพลิดเพลิน': x.q2_bored, '9Q คะแนน': x.q9_score, '9Q ระดับ': x.q9_level, 'เจ็บปวดในช่องปาก': x.oral_pain,
       'โรคในครอบครัว': x.family_hx, 'ค่าผิดปกติ': screenFlags(x, x.gender).map(f => f.t).join(', '), 'อสม.ผู้คัดกรอง': x.vhv_name };
@@ -3216,6 +3420,7 @@ ${pagesHtml}
       case 'disease': return r.disease && r.disease !== '-' ? r.disease : (r.disease === '-' ? '-' : '');
       case 'blood_group': { const b = bloodOf(r.citizen_id); return b.g; }
       case 'blood_rh': { const b = bloodOf(r.citizen_id); return b.rh; }
+      case 'health_right': { if (!x) return ''; const sp = splitRight(x.health_right); return sp.hosp ? sp.right + '\n' + sp.hosp : sp.right; }
       case 'vhv_name': return (dbVHV.find(u => u.vhv_id === r.owner) || {}).name || '';
     }
     if (!x) return '';
@@ -3267,7 +3472,10 @@ ${pagesHtml}
       const formulas = {};
       for (let c = 1; c <= ws.columnCount; c++) { const v = tplRow.getCell(c).value; if (v && typeof v === 'object' && v.formula) formulas[c] = v.formula; }
       const fRow = (f, r) => f.replace(new RegExp('(\\$?[A-Z]{1,3})\\$?' + dataStart + '(?![0-9])', 'g'), '$1' + r);
-      const lastRow = Math.max(capEnd, dataStart + list.length - 1);
+      // 20 คนต่อแผ่น (ตามจำนวนแถวในต้นแบบ) • แผ่นสุดท้ายเติมแถวว่างให้ครบ
+      const PER_PAGE = capEnd - dataStart + 1;
+      const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+      const lastRow = dataStart + pages * PER_PAGE - 1;
       for (let i = 0; dataStart + i <= lastRow; i++) {
         const rn = dataStart + i, row = ws.getRow(rn);
         if (rn > capEnd) { row.height = lastTpl.height; for (let c = 1; c <= ws.columnCount; c++) row.getCell(c).style = JSON.parse(JSON.stringify(lastTpl.getCell(c).style || {})); }
@@ -3280,15 +3488,22 @@ ${pagesHtml}
           if (!f) continue;
           const v = form35Value(f, r, screenOf(r.citizen_id, fy));
           cell.value = (v === '' || v == null) ? null : v;
+          if (typeof v === 'string' && v.includes('\n')) {   // สิทธิบัตร 2 บรรทัด: ประกันสังคม / ชื่อ รพ.
+            const longest = Math.max(...v.split('\n').map(t => t.length));
+            cell.style = JSON.parse(JSON.stringify(cell.style || {}));   // แยกสไตล์ (ExcelJS ใช้ร่วมกันทั้งคอลัมน์)
+            cell.alignment = Object.assign({}, cell.alignment || {}, { wrapText: true, vertical: 'middle', horizontal: 'center' });
+            cell.font = Object.assign({}, cell.font || {}, { size: longest > 16 ? 7.5 : longest > 11 ? 8.5 : 9.5 });
+          }
         }
         row.commit && row.commit();
       }
-      // กระดาษ F4 (Excel = Folio 8.5×13 นิ้ว ≈ 216×330 มม.) แนวนอน • กว้างพอดี 1 หน้า ยาวแบ่งหน้าอัตโนมัติ • ขอบแคบ
+      // กระดาษ F4 (Excel = Folio 8.5×13 นิ้ว ≈ 216×330 มม.) แนวนอน • 20 คนต่อแผ่น • ตารางอยู่กึ่งกลางกระดาษ • ขอบ ≈8 มม. ทุกด้าน
+      for (let k = 1; k < pages; k++) ws.getRow(dataStart + k * PER_PAGE - 1).addPageBreak();
       ws.pageSetup.paperSize = 14;
       ws.pageSetup.orientation = 'landscape';
-      ws.pageSetup.fitToPage = true; ws.pageSetup.fitToWidth = 1; ws.pageSetup.fitToHeight = 0;
-      ws.pageSetup.horizontalCentered = true; ws.pageSetup.verticalCentered = false;   // หน้าสุดท้ายชิดบน ไม่ลอยกลางแผ่น
-      ws.pageSetup.margins = { left: 0.18, right: 0.18, top: 0.4, bottom: 0.4, header: 0.15, footer: 0.15 };   // บน-ล่าง ≈10 มม. กันเส้นล่างสุดโดนตัด
+      ws.pageSetup.fitToPage = true; ws.pageSetup.fitToWidth = 1; ws.pageSetup.fitToHeight = pages;
+      ws.pageSetup.horizontalCentered = true; ws.pageSetup.verticalCentered = true;
+      ws.pageSetup.margins = { left: 0.32, right: 0.32, top: 0.32, bottom: 0.32, header: 0.1, footer: 0.1 };
       ws.pageSetup.printArea = `A1:${ws.getColumn(ws.columnCount).letter}${lastRow}`;
       if (!ws.pageSetup.printTitlesRow && headRows.length) ws.pageSetup.printTitlesRow = `${headRows[0]}:${headRows[headRows.length - 1]}`;
       const out = await wb.xlsx.writeBuffer();
@@ -3301,6 +3516,142 @@ ${pagesHtml}
     } catch (e) { console.error(e); alert('สร้างแบบฟอร์มไม่สำเร็จ: ' + e.message); }
     finally { hideLoader(); }
   }
+
+  /* ==================================================================
+     หน้าตาใหม่ฝั่ง อสม.: หน้าแรก "วันนี้ต้องทำ" • ฟอร์มลูกบ้านทีละขั้น • ปุ่มเพิ่มลูกบ้าน
+     ================================================================== */
+  const TH_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+  const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  function renderVHVHome() {
+    if (!currentUser || currentUser.role !== 'vhv' || !document.getElementById('hm-route')) return;
+    const t = new Date(Date.now() + 7 * 3600000);
+    const me = dbVHV.find(u => u.vhv_id === currentUser.id) || {};
+    const vill = (typeof getSelectedVillage === 'function' && getSelectedVillage()) || '';
+    document.getElementById('hm-hi').textContent = 'สวัสดี คุณ' + String(currentUser.name || '').replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, '').trim().split(/\s+/)[0];
+    document.getElementById('hm-date').innerHTML = `${TH_DAYS[t.getUTCDay()]} ${t.getUTCDate()} ${TH_MONTHS[t.getUTCMonth()]} ${t.getUTCFullYear() + 543}<br>อสม.${me.moo ? ' หมู่ ' + esc(me.moo) : ''}${vill ? ' ' + esc(vill) : ''}`;
+    const q = getQueue().length;
+    const sy = document.getElementById('hm-sync');
+    sy.className = 'hm-sync' + (q ? ' warn' : '');
+    sy.innerHTML = q ? `<b></b>รอส่งขึ้นระบบ ${q} รายการ` : (navigator.onLine ? '<b></b>ข้อมูลเป็นปัจจุบัน' : '<b></b>ออฟไลน์ ใช้ข้อมูลในเครื่อง');
+
+    const mine = dbResidents.filter(r => r.owner === currentUser.id);
+    const today = new Date(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate());
+    // 1) เยี่ยมเลยกำหนด
+    const overdue = [];
+    mine.forEach(r => {
+      const vs = dbVisits.filter(v => v.citizen_id === r.citizen_id); if (!vs.length) return;
+      const d = parseAnyDate(vs[vs.length - 1].next_appt); if (d && d < today) overdue.push(r);
+    });
+    // 2) นัด รพ. ใน 7 วัน
+    const appts = mine.map(r => ({ r, d: parseAnyDate(r.hosp_appt) })).filter(x => x.d && (x.d - today) / 86400000 >= 0 && (x.d - today) / 86400000 <= 7).sort((a, b) => a.d - b.d);
+    // 3) ลูกน้ำเดือนนี้
+    const mk = todayISO().slice(0, 7);
+    const houses = housesOf(mine), st = larvaStatusByHouse(mk, dbLarval);
+    const lDone = houses.filter(h => st[h.key]).length, lTodo = houses.length - lDone;
+    // 4) คัดกรอง 35+
+    const tgt = mine.filter(r => { const a = ageOf(r); return a !== '' && a >= 35; });
+    const sDone = tgt.filter(r => screenOf(r.citizen_id)).length, sTodo = tgt.length - sDone;
+    const fy2 = currentFY().slice(-2);
+    const nm = list => list.slice(0, 2).map(r => esc(String(r.name || '').replace(/^(นาย|นางสาว|นาง|น\.ส\.|ด\.ช\.|ด\.ญ\.)\s*/, '').split(/\s+/)[0])).join(', ') + (list.length > 2 ? ` และอีก ${list.length - 2} คน` : '');
+    const whenTxt = d => { const n = Math.round((d - today) / 86400000); return n === 0 ? 'วันนี้' : n === 1 ? 'พรุ่งนี้' : `อีก ${n} วัน`; };
+    const stop = (cls, icon, title, sub, n, onclick, bar) => `<button type="button" class="hm-stop ${cls}" onclick="${onclick}">
+      <span class="hm-dot" aria-hidden="true">${icon}</span>
+      <span class="hm-t"><b>${title}</b><span>${sub}</span>${bar != null ? `<span class="hm-bar"><i style="width:${bar}%"></i></span>` : ''}</span>
+      <span class="hm-n">${n}</span></button>`;
+    let h = '';
+    h += overdue.length ? stop('red', '🩺', 'เยี่ยมบ้านเลยกำหนด', nm(overdue), overdue.length, "hmOpen('hm-visits')") : stop('grn done', '🩺', 'เยี่ยมบ้านตามนัด', 'ไม่มีนัดที่เลยกำหนด', '✓', "hmOpen('hm-visits')");
+    h += appts.length ? stop('amb', '🏥', `นัดโรงพยาบาล${whenTxt(appts[0].d)}`, `${nm(appts.map(x => x.r))} ควรโทรเตือน`, appts.length, "hmScroll('vhv-appt-panel')") : '';
+    h += houses.length ? stop(lTodo ? 'grn' : 'grn done', '🦟', `สำรวจลูกน้ำ ${TH_MONTHS[t.getUTCMonth()]}`, lTodo ? `เหลือ ${lTodo} จาก ${houses.length} หลัง` : `ครบ ${houses.length} หลังแล้ว`, lTodo || '✓', "switchVHVTab('vlarva')", Math.round(lDone / houses.length * 100)) : '';
+    h += tgt.length ? stop(sTodo ? 'grn' : 'grn done', '📋', `คัดกรอง 35 ปีขึ้นไป ปีงบ ${fy2}`, sTodo ? `เหลือ ${sTodo} จาก ${tgt.length} คน` : `ครบ ${tgt.length} คนแล้ว`, sTodo || '✓', 'hmGoScreenTodo()', Math.round(sDone / tgt.length * 100)) : '';
+    if (!mine.length) h = stop('grn', '👥', 'ยังไม่มีลูกบ้านในความดูแล', 'เริ่มจากเพิ่มลูกบ้านคนแรก', '➕', 'openNewResident()');
+    document.getElementById('hm-route').innerHTML = h;
+
+    // ต้องติดตามใกล้ชิด: ผลคัดกรองระดับด่วน หรือเยี่ยมล่าสุดเป็น 🔴
+    const follow = [];
+    mine.forEach(r => {
+      const x = screenOf(r.citizen_id); const f = x ? screenFlags(x, r.gender).filter(i => i.lv >= 2) : [];
+      const vs = dbVisits.filter(v => v.citizen_id === r.citizen_id); const lv = vs[vs.length - 1];
+      const red = lv && String(lv.triage || '').includes('🔴');
+      if (f.length || red) follow.push({ r, why: red ? `เยี่ยมล่าสุด ${toThaiDateStr(lv.date)} ระดับฉุกเฉิน${lv.bp && lv.bp !== '-' ? ' ความดัน ' + lv.bp : ''}` : f.map(i => i.t).join(', ') });
+    });
+    document.getElementById('hm-follow').innerHTML = follow.length ? `<h2 class="hm-h">ต้องติดตามใกล้ชิด</h2>` + follow.slice(0, 5).map(z => `<div class="hm-mini"><div><b>${esc(z.r.name)}</b><span>${esc(z.why)}</span></div><button type="button" onclick="openVisitModalByCid('${esc(z.r.citizen_id)}')">เยี่ยม</button></div>`).join('') : '';
+  }
+  function hmOpen(id) { const d = document.getElementById(id); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
+  function hmScroll(id) { const d = document.getElementById(id); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  function hmGoScreenTodo() {
+    switchVHVTab('vtask');
+    setAgeFilter('vf', 35, ''); const st = document.getElementById('vf-scr-status'); if (st) st.value = 'todo';
+    { const w = document.getElementById('vf-wrap'); if (w) w.open = true; }
+    renderResidents();
+  }
+
+  /* ----- ฟอร์มลูกบ้านทีละขั้น ----- */
+  let rfCur = 1;
+  function rfGo(n) {
+    rfCur = Math.max(1, Math.min(3, n));
+    document.querySelectorAll('#resident-form .rf-step').forEach(el => el.classList.toggle('on', +el.dataset.step === rfCur));
+    document.querySelectorAll('#resident-form .rs-st').forEach(el => { const k = +el.dataset.s; el.classList.toggle('on', k === rfCur); el.classList.toggle('done', k < rfCur); });
+    document.getElementById('rf-back').style.visibility = rfCur === 1 ? 'hidden' : 'visible';
+    document.getElementById('rf-next').classList.toggle('hidden', rfCur === 3);
+    document.getElementById('rf-save').classList.toggle('hidden', rfCur !== 3);
+    const nx = document.getElementById('rf-next');
+    nx.textContent = rfCur === 1 ? 'ถัดไป: บ้านและพิกัด' : 'ถัดไป: สุขภาพและนัด';
+    const sh = document.getElementById('res-sheet'); if (sh) sh.scrollTop = 0;
+  }
+  function rfMissing(step) {
+    const box = document.querySelector(`#resident-form .rf-step[data-step="${step}"]`);
+    const miss = [...box.querySelectorAll('[required]')].filter(el => !String(el.value || '').trim());
+    box.querySelectorAll('.rf-missing').forEach(el => el.classList.remove('rf-missing'));
+    miss.forEach(el => el.classList.add('rf-missing'));
+    return miss;
+  }
+  function rfStep(dir) {
+    if (dir > 0) {
+      const miss = rfMissing(rfCur);
+      if (miss.length) { miss[0].focus(); toast('กรอกช่องที่มีเครื่องหมาย * ให้ครบก่อน', 'warn'); return; }
+    }
+    rfGo(rfCur + dir);
+  }
+  function residentFormValid() {
+    for (let k = 1; k <= 3; k++) { const m = rfMissing(k); if (m.length) { rfGo(k); setTimeout(() => m[0].focus(), 50); toast('กรอกช่องที่มีเครื่องหมาย * ให้ครบก่อน', 'warn'); return false; } }
+    return true;
+  }
+  function openResSheet(isEdit) {
+    { const sh = document.getElementById('res-sheet'), vv = document.getElementById('vhv-view'); if (sh && vv && sh.parentElement !== vv) vv.appendChild(sh); }   // ให้เปิดได้จากทุกแท็บ
+    document.getElementById('rs-title').textContent = isEdit ? 'แก้ไขข้อมูลลูกบ้าน' : 'เพิ่มลูกบ้าน';
+    document.getElementById('rf-save').textContent = isEdit ? '💾 บันทึกการแก้ไข' : '💾 บันทึกลูกบ้าน';
+    document.getElementById('rs-banner').classList.add('hidden');
+    document.querySelectorAll('#resident-form .rf-missing').forEach(el => el.classList.remove('rf-missing'));
+    document.getElementById('res-sheet').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    rfGo(1);
+  }
+  function closeResSheet() {
+    document.getElementById('res-sheet').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  function openNewResident() { clearResForm(); openResSheet(false); }
+  const _editResidentOrig = editResident;
+  editResident = function (cid) { _editResidentOrig(cid); openResSheet(true); };
+  const _saveResidentOrig = saveResident;
+  saveResident = function (e) {
+    e.preventDefault();
+    if (!residentFormValid()) return;
+    window.__rfWasEdit = !!document.getElementById('res-citizen-id').dataset.realCid;
+    window.__rfSavedName = document.getElementById('res-name').value;
+    _saveResidentOrig(e);
+  };
+  function afterResidentSaved(x) {
+    if (window.__rfWasEdit) { closeResSheet(); return; }
+    // เพิ่มคนใหม่: เปิดฟอร์มค้างไว้ให้เพิ่มสมาชิกบ้านเดียวกันต่อ
+    openResSheet(false);
+    const b = document.getElementById('rs-banner');
+    b.innerHTML = `✅ บันทึก ${esc(window.__rfSavedName || '')} แล้ว เพิ่มสมาชิกบ้าน ${esc(x.house_no)} ต่อได้เลย หรือกด ✕ เพื่อปิด`;
+    b.classList.remove('hidden');
+  }
+  document.addEventListener('input', e => { if (e.target && e.target.classList && e.target.classList.contains('rf-missing') && String(e.target.value || '').trim()) e.target.classList.remove('rf-missing'); }, true);
+  document.addEventListener('change', e => { if (e.target && e.target.classList && e.target.classList.contains('rf-missing') && String(e.target.value || '').trim()) e.target.classList.remove('rf-missing'); }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('res-sheet').classList.contains('hidden')) closeResSheet(); });
 </script>
 </body>
 </html>
