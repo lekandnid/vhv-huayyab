@@ -79,7 +79,10 @@
   .summary-box p { margin:4px 0 0; font-size:.85em; color:var(--text-muted); font-weight:600; }
   .cid-cell { font-family:monospace; font-size:15px; white-space:nowrap; }
   .cid-eye { padding:2px 8px !important; margin-left:4px; font-size:15px; }
-  @media print { body * { visibility:hidden !important; } #report-print, #report-print * { visibility:visible !important; } #report-print { display:block !important; position:absolute; left:0; top:0; width:100%; border:none; box-shadow:none; padding:0; } .no-print { display:none !important; } }
+  .pm-wrap { width:100%; border-collapse:collapse; } .pm-wrap > thead > tr > td, .pm-wrap > tfoot > tr > td, .pm-wrap > tbody > tr > td.pm-c { border:none !important; padding:0 !important; background:none !important; } .pm-sp { display:none; }
+  .pdf-mode #report-print { border:none !important; border-radius:0 !important; padding:0 !important; box-shadow:none !important; }
+  .btn-pdf { background:#C0392B !important; color:#fff !important; }
+  @media print { @page { size:A4; margin:0; } .pm-sp { display:block; height:12mm; } .pm-wrap > tbody > tr > td.pm-c { padding:0 12mm !important; } body * { visibility:hidden !important; } #report-print, #report-print * { visibility:visible !important; } #report-print { display:block !important; position:absolute; left:0; top:0; width:100%; border:none; box-shadow:none; padding:0; } .no-print { display:none !important; } }
   @media (max-width:600px) { .header-bar { flex-direction:column; align-items:flex-start; } .stat-card h2 { font-size:1.7em; } }
   .cid-line { font-family:monospace; font-size:13px; color:#334; letter-spacing:.3px; white-space:nowrap; }
   .tool-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-bottom:12px; }
@@ -742,7 +745,8 @@
             <div class="form-group"><label>เลือกเดือน</label><input type="month" id="report-month" onchange="buildMonthlyReport()"></div>
             <div class="form-group btn-row">
               <button type="button" onclick="buildMonthlyReport()">🔄 สร้าง</button>
-              <button type="button" class="btn-warn" onclick="window.print()">🖨️ พิมพ์ / PDF</button>
+              <button type="button" class="btn-warn" onclick="window.print()">🖨️ พิมพ์</button>
+              <button type="button" class="btn-pdf" onclick="saveMonthlyPdf()">📄 บันทึกเป็น PDF</button>
               <button type="button" class="btn-success" onclick="exportExcel('vhv')">📥 ส่งออก Excel</button>
             </div>
           </div>
@@ -2241,16 +2245,18 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
 .summary { background:#f8f9fa; padding:12px; border-radius:6px; border:1px solid #ddd; margin:12px 0; } .summary p { margin:4px 0; font-size:14px; }
 .signs { display:flex; justify-content:space-around; margin-top:55px; text-align:center; gap:20px; } .signs .col { flex:1; }
 .signs .space { margin-bottom:45px; color:#555; } .signs .name { font-weight:600; margin:0; } .signs .role { color:#555; font-size:13px; margin:2px 0 0; }
-@media print { body { background:#fff; padding:0; font-size:12px; } .wrap { max-width:100%; } .toolbar { display:none !important; } .page { box-shadow:none; padding:0; border-radius:0; } h3 { page-break-after:avoid; } table { page-break-inside:auto; } tr { page-break-inside:avoid; } @page { size:A4; margin:12mm; } }
+@media print { body { background:#fff; padding:0; font-size:12px; } .wrap { max-width:100%; } .toolbar { display:none !important; } .page { box-shadow:none; padding:0; border-radius:0; } h3 { page-break-after:avoid; } table { page-break-inside:auto; } tr { page-break-inside:avoid; } @page { size:A4; margin:0; } .pm-sp { display:block; height:12mm; } .pm-wrap > tbody > tr > td.pm-c { padding:0 12mm !important; } }
+.pm-wrap { width:100%; border-collapse:collapse; } .pm-wrap > thead > tr > td, .pm-wrap > tfoot > tr > td, .pm-wrap > tbody > tr > td.pm-c { border:none !important; padding:0 !important; background:none !important; } .pm-sp { display:none; } .pdf-mode .page { box-shadow:none; border-radius:0; padding:0; }
 @media (max-width:600px) { body { padding:10px; font-size:13px; } .page { padding:18px 14px; } h1 { font-size:17px; } h2 { font-size:15px; } h3 { font-size:14px; } table { font-size:11px; } th,td { padding:4px 5px; } .signs { flex-direction:column; gap:40px; margin-top:40px; } }
 </style></head><body>
 <div class="wrap">
 <div class="toolbar">
-<button onclick="window.print()">🖨️ พิมพ์ / บันทึกเป็น PDF</button>
+<button onclick="window.print()">🖨️ พิมพ์</button>
+<button onclick="savePdf({flow:document.getElementById('pdf-root'),windowWidth:900,name:${esc(JSON.stringify('สรุปลูกน้ำยุงลาย_' + thaiMonthLabel(mk)))}})" style="background:#C0392B;">📄 บันทึกเป็น PDF</button>
 <button onclick="window.close()" style="background:#6c757d;">ปิดหน้านี้</button>
-<div class="hint">📱 บนมือถือ: กดพิมพ์ → เลือก "บันทึกเป็น PDF" / "Save to Files"</div>
+<div class="hint">📱 iPhone: กด "📄 บันทึกเป็น PDF" แล้วเลือกบันทึกไปยังไฟล์/พิมพ์ — จะไม่มีที่อยู่เว็บติดบนกระดาษ</div>
 </div>
-<div class="page">
+<div class="page" id="pdf-root"><table class="pm-wrap"><thead><tr><td><div class="pm-sp"></div></td></tr></thead><tfoot><tr><td><div class="pm-sp"></div></td></tr></tfoot><tbody><tr><td class="pm-c">
 <h1>${esc(appSettings.hosp_name || 'รพ.สต.ห้วยยาบ')}</h1>
 <h2>${esc(title)}</h2>
 <div class="meta">${esc(subtitle)}</div>
@@ -2270,10 +2276,11 @@ th { background:#eef3f8; font-weight:700; text-align:left; } .center { text-alig
 <div class="col"><div class="space">ลงชื่อ ........................................................</div><p class="name">( ${esc(reporterName)} )</p><p class="role">${esc(reporterRole)}</p></div>
 <div class="col"><div class="space">ลงชื่อ ........................................................</div><p class="name">( .................................................. )</p><p class="role">เจ้าหน้าที่ ${esc(appSettings.hosp_name || 'รพ.สต.')}</p></div>
 </div>
+</td></tr></tbody></table>
 </div></div></body></html>`;
     const w = window.open('', '_blank');
     if (!w) { alert('⚠️ เบราว์เซอร์บล็อก Popup\nกรุณาอนุญาต popup แล้วลองใหม่'); return; }
-    w.document.open(); w.document.write(html); w.document.close();
+    w.document.open(); w.document.write(html); w.document.close(); injectPdfEngine(w);
   }
 
 
@@ -2557,6 +2564,8 @@ body { margin:0; background:#dfe3e8; font-family:'Sarabun',sans-serif; color:#00
 .signs { display:flex; justify-content:space-between; margin-top:9mm; gap:8mm; }
 .sg { flex:1; font-weight:600; } .sg > div { margin:3mm 0; white-space:nowrap; } .sg .indent { padding-left:8mm; }
 .cont { text-align:right; margin-top:4mm; font-size:12px; color:#444; }
+.pdf-mode .sheet { zoom:1 !important; margin:0 !important; box-shadow:none !important; }
+.pdf-mode .fill, .pdf-mode .grid td, .pdf-mode .grid td.pos { color:#000; } .pdf-mode .fill.village { background:none; }
 @media print {
   @page { size:A4 portrait; margin:0; }
   body { background:#fff; }
@@ -2570,15 +2579,16 @@ body { margin:0; background:#dfe3e8; font-family:'Sarabun',sans-serif; color:#00
 </style></head><body>
 <div class="toolbar">
   <div class="vrow">${villageInputs}</div>
-  <button onclick="window.print()">🖨️ พิมพ์ / บันทึกเป็น PDF</button>
+  <button onclick="window.print()">🖨️ พิมพ์</button>
+  <button onclick="savePdf({pages:[...document.querySelectorAll('.sheet')],name:${esc(JSON.stringify('แบบสำรวจลูกน้ำยุงลาย_' + (isVHV && myMoo ? 'ม' + myMoo + '_' : '') + monTxt + yrTxt))}})" style="background:#C0392B;">📄 บันทึกเป็น PDF</button>
   <button onclick="window.close()" style="background:#6c757d;">ปิดหน้านี้</button>
-  <div class="hint">พิมพ์ชื่อหมู่บ้านครั้งเดียว ระบบจำไว้ใช้ครั้งต่อไป • A4 แนวตั้ง ขอบกระดาษ "ไม่มี" ขนาด 100%</div>
+  <div class="hint">พิมพ์ชื่อหมู่บ้านครั้งเดียว ระบบจำไว้ใช้ครั้งต่อไป • A4 แนวตั้ง ขอบกระดาษ "ไม่มี" ขนาด 100%<br>📱 iPhone: กด "📄 บันทึกเป็น PDF" แล้วเลือกบันทึกไปยังไฟล์/พิมพ์ — จะไม่มีที่อยู่เว็บติดบนกระดาษ</div>
 </div>
 ${pagesHtml}
 </body></html>`;
     const w = window.open('', '_blank');
     if (!w) { alert('⚠️ เบราว์เซอร์บล็อก Popup\nกรุณาอนุญาต popup แล้วลองใหม่'); return; }
-    w.document.open(); w.document.write(html); w.document.close();
+    w.document.open(); w.document.write(html); w.document.close(); injectPdfEngine(w);
     wireLarvaPrint(w, D);
   }
   // ผูกช่องชื่อหมู่บ้าน + ย่อหน้ากระดาษให้พอดีจอ (สั่งจากหน้าหลัก ไม่ต้องรอฟอนต์โหลด ใช้ได้ตอนออฟไลน์)
@@ -2601,6 +2611,12 @@ ${pagesHtml}
   }
 
   /* ========== Monthly report ========== */
+  function saveMonthlyPdf() {
+    const el = document.getElementById('report-print');
+    if (!el.textContent.trim()) buildMonthlyReport();
+    const mk = document.getElementById('report-month').value;
+    savePdf({ flow: el, windowWidth: 860, name: 'รายงานประจำเดือน_' + (currentUser.name || '') + '_' + (mk ? thaiMonthLabel(mk) : '') });
+  }
   function buildMonthlyReport() {
     const mk = document.getElementById('report-month').value;
     const myResidents = dbResidents.filter(r => r.owner === currentUser.id);
@@ -2659,12 +2675,127 @@ ${pagesHtml}
 <div><p style="margin-bottom:40px;">ลงชื่อ ....................................................</p><p style="margin:0;">(${esc(currentUser.name)})<br>อสม. ผู้รายงาน</p></div>
 <div><p style="margin-bottom:40px;">ลงชื่อ ....................................................</p><p style="margin:0;">(................................................)<br>เจ้าหน้าที่ ${esc(appSettings.hosp_name || 'รพ.สต.')}</p></div>
 </div>`;
-    document.getElementById('report-print').innerHTML = html;
+    document.getElementById('report-print').innerHTML = '<table class="pm-wrap"><thead><tr><td><div class="pm-sp"></div></td></tr></thead><tfoot><tr><td><div class="pm-sp"></div></td></tr></tfoot><tbody><tr><td class="pm-c">' + html + '</td></tr></tbody></table>';
   }
 
   /* ==================================================================
      ส่วนเสริม: ความคืบหน้าลูกน้ำ • นัด รพ. • แผนที่ • ตรวจข้อมูล • Excel
      ================================================================== */
+  /* ========== บันทึกเป็น PDF (ไม่มีที่อยู่เว็บติดเหมือนสั่งพิมพ์จาก Safari) ==========
+     ใช้ได้ทั้งหน้าหลักและหน้าพิมพ์ที่เปิดใหม่ (ฟังก์ชันนี้ถูกฝังลงในหน้าพิมพ์ด้วย) */
+  function pdfEngine() {
+    const W = window, D = document;
+    const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+    const loaded = {};
+    const load = u => loaded[u] || (loaded[u] = new Promise((ok, bad) => {
+      const s = D.createElement('script'); s.src = u; s.onload = ok;
+      s.onerror = () => { delete loaded[u]; bad(new Error('load')); }; D.head.appendChild(s);
+    }));
+    // โหลดตัวสร้าง PDF เข้าหน้านี้ (ต้องเป็นหน้าเดียวกับเอกสาร — ใช้ข้ามหน้าต่างไม่ได้)
+    async function libs() {
+      if (!(W.html2canvas && W.jspdf)) await Promise.all(LIBS.map(load));
+      return { h2c: W.html2canvas, JsPDF: W.jspdf.jsPDF };
+    }
+    function panel() {
+      const ov = D.createElement('div');
+      ov.setAttribute('style', 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px;font-family:Sarabun,sans-serif;');
+      const box = D.createElement('div');
+      box.setAttribute('style', 'background:#fff;border-radius:14px;padding:22px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.25);font-size:16px;color:#123;');
+      ov.appendChild(box); D.body.appendChild(ov);
+      const btn = (txt, bg, fn) => { const b = D.createElement('button'); b.type = 'button'; b.textContent = txt;
+        b.setAttribute('style', 'display:block;width:100%;margin:10px 0 0;padding:13px;border:none;border-radius:10px;font:700 16px Sarabun,sans-serif;color:#fff;cursor:pointer;background:' + bg);
+        b.onclick = fn; box.appendChild(b); return b; };
+      return {
+        msg(t) { box.innerHTML = '<div style="font-weight:700;">' + t + '</div>'; },
+        btn, close() { ov.remove(); }
+      };
+    }
+    function download(blob, name) {
+      const a = D.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      D.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    }
+    // o = { pages:[element,...] (1 element = 1 หน้า A4) | flow:element (แบ่งหน้าอัตโนมัติ), name, windowWidth, margin(mm) }
+    W.savePdf = async function (o) {
+      const name = String(o.name || 'รายงาน').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_') + '.pdf';
+      const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      let handle = null;
+      if (!mobile && W.showSaveFilePicker) {   // คอมพิวเตอร์: เลือกโฟลเดอร์/ชื่อไฟล์ก่อน
+        try { handle = await W.showSaveFilePicker({ suggestedName: name, types: [{ description: 'ไฟล์ PDF', accept: { 'application/pdf': ['.pdf'] } }] }); }
+        catch (e) { if (e && e.name === 'AbortError') return; handle = null; }
+      }
+      const ui = panel(); ui.msg('⏳ กำลังสร้าง PDF...<br><small style="font-weight:400;color:#667;">รอสักครู่</small>');
+      try {
+        let L;
+        try { L = await libs(); }
+        catch (e) { ui.msg('📶 ต้องต่ออินเทอร์เน็ตเพื่อสร้าง PDF'); ui.btn('ปิด', '#6c757d', ui.close); return; }
+        if (D.fonts && D.fonts.ready) await Promise.race([D.fonts.ready, new Promise(r => setTimeout(r, 4000))]);
+        const pdf = new L.JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+        const PW = 210, PH = 297;
+        const shot = (el, extra) => Promise.race([new Promise((_, bad) => setTimeout(() => bad(new Error('ใช้เวลานานเกินไป ลองใหม่อีกครั้ง')), 45000)), L.h2c(el, Object.assign({ scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true,
+          windowWidth: o.windowWidth || Math.max(1000, el.scrollWidth + 40), scrollX: 0, scrollY: 0 }, extra || {}))]);
+        const addCls = doc => doc.documentElement.classList.add('pdf-mode');
+        if (o.pages) {
+          let first = true;
+          for (const el of o.pages) {
+            const c = await shot(el, { onclone: addCls });
+            if (!first) pdf.addPage(); first = false;
+            pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PW, PH);
+          }
+        } else {
+          const M = o.margin || 12, CW = PW - 2 * M, CH = PH - 2 * M;
+          let atoms = [], baseH = 1;
+          const c = await shot(o.flow, { onclone: (doc, el) => {
+            addCls(doc);
+            const target = el || doc.getElementById(o.flow.id);
+            const b = target.getBoundingClientRect(); baseH = b.height || 1;
+            target.querySelectorAll('tr, h1, h2, h3, h4, p, li, img, .signs, .summary').forEach(x => {
+              if (x.matches('.pm-wrap > * > tr')) return;   // แถวครอบทั้งหน้า ไม่ใช่แถวข้อมูล
+              const r = x.getBoundingClientRect(); if (r.height > 0) atoms.push([r.top - b.top, r.bottom - b.top]);
+            });
+          } });
+          const k = c.height / baseH;                 // พิกเซลบนภาพ ต่อ 1 px ของหน้าเว็บ
+          const pxPerMm = c.width / CW, pageH = Math.floor(CH * pxPerMm);
+          const cuts = [...new Set(atoms.flat().map(v => Math.round(v * k)))].sort((a, b) => a - b);
+          const ok = y => !atoms.some(([t, bt]) => t * k < y - 1 && bt * k > y + 1);
+          let y = 0, first = true;
+          while (y < c.height - 2) {
+            let end = Math.min(y + pageH, c.height);
+            if (end < c.height) {
+              const cand = cuts.filter(v => v > y + pageH * 0.4 && v <= end && ok(v));
+              if (cand.length) end = cand[cand.length - 1];
+            }
+            const part = D.createElement('canvas'); part.width = c.width; part.height = end - y;
+            const g = part.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, part.width, part.height);
+            g.drawImage(c, 0, y, c.width, end - y, 0, 0, c.width, end - y);
+            if (!first) pdf.addPage(); first = false;
+            pdf.addImage(part.toDataURL('image/jpeg', 0.92), 'JPEG', M, M, CW, (end - y) / pxPerMm);
+            y = end;
+          }
+        }
+        const blob = pdf.output('blob');
+        if (handle) {
+          const w = await handle.createWritable(); await w.write(blob); await w.close();
+          ui.msg('✅ บันทึก PDF แล้ว<br><small style="font-weight:400;color:#667;">' + handle.name + '</small>');
+          ui.btn('ปิด', '#6c757d', ui.close); return;
+        }
+        const file = new File([blob], name, { type: 'application/pdf' });
+        const canShare = navigator.canShare && navigator.share && navigator.canShare({ files: [file] });
+        ui.msg('✅ สร้าง PDF เสร็จแล้ว<br><small style="font-weight:400;color:#667;">' + name + '</small>');
+        if (canShare) ui.btn('📤 บันทึกไปยังไฟล์ / พิมพ์ / ส่ง LINE', '#1E6FB8', () => {
+          navigator.share({ files: [file], title: name }).then(ui.close).catch(e => { if (!e || e.name !== 'AbortError') download(blob, name); });
+        });
+        ui.btn('⬇️ ดาวน์โหลด PDF', canShare ? '#5b6b7b' : '#1E6FB8', () => { download(blob, name); setTimeout(ui.close, 600); });
+        ui.btn('ปิด', '#9aa5b1', ui.close);
+      } catch (e) {
+        console.error(e); ui.msg('⚠️ สร้าง PDF ไม่สำเร็จ<br><small style="font-weight:400;">' + (e && e.message || e) + '</small>'); ui.btn('ปิด', '#6c757d', ui.close);
+      }
+    };
+  }
+  pdfEngine();
+  // ใส่ตัวสร้าง PDF ลงในหน้าพิมพ์ที่เปิดใหม่ (ทำงานทันที ไม่ต้องรอฟอนต์โหลด)
+  function injectPdfEngine(w) { try { const sc = w.document.createElement('script'); sc.textContent = '(' + pdfEngine.toString() + ')();'; (w.document.head || w.document.documentElement).appendChild(sc); } catch (e) { console.warn(e); } }
+
   function loadScriptOnce(url) {
     window.__loaded = window.__loaded || {};
     if (window.__loaded[url]) return window.__loaded[url];
