@@ -353,8 +353,9 @@
       </div>
       <div class="form-group"><label>รหัสประจำตัว</label><input type="text" id="login-id" placeholder="กรอกรหัสประจำตัว"></div>
       <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="login-pass" placeholder="กรอกรหัสผ่าน"></div>
+      <div id="login-msg" class="hidden" style="background:#fff3cd; color:#7a5a00; border-radius:8px; padding:10px 12px; font-size:14px; font-weight:600; margin-bottom:6px;"></div>
       <button type="button" style="width:100%; margin-top:10px; font-size:16px; padding:12px;" onclick="handleLogin()">เข้าสู่ระบบ</button>
-      <p style="text-align:center; margin-top:14px; font-size:13px; color:var(--text-muted);">📶 อสม. ใช้แบบออฟไลน์ได้ • ผู้ดูแลระบบต้องออนไลน์</p>
+      <p style="text-align:center; margin-top:14px; font-size:13px; color:var(--text-muted);">📶 เข้าสู่ระบบต้องออนไลน์ • เข้าแล้วบันทึกแบบออฟไลน์ได้</p>
       <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:6px;">สถานะ: <span id="net-status">ตรวจสอบ...</span> | ข้อมูล: <span id="data-status">รอโหลด</span></p>
     </div>
   </div>
@@ -497,7 +498,7 @@
           <h4 style="margin-bottom:15px;">เพิ่ม / แก้ไข ข้อมูล อสม.</h4>
           <div class="form-row">
             <div class="form-group"><label>รหัสประจำตัว *</label><input type="text" id="vhv-id" required></div>
-            <div class="form-group"><label>รหัสผ่าน *</label><input type="text" id="vhv-pass" required></div>
+            <div class="form-group"><label>รหัสผ่าน *</label><input type="text" id="vhv-pass" placeholder="แก้ไข อสม. เดิม: เว้นว่าง = ใช้รหัสเดิม" autocomplete="off"></div>
             <div class="form-group"><label>ชื่อ-นามสกุล *</label><input type="text" id="vhv-name" required></div>
             <div class="form-group"><label>หมู่ที่รับผิดชอบ</label><input type="text" id="vhv-moo" required></div>
           </div>
@@ -522,7 +523,7 @@
           </div>
         </div>
         <div class="flt-bar" style="margin-top:0;">
-          <span class="flt-label">📄 แบบฟอร์ม 35 ปีขึ้นไป (F4)</span>
+          <span class="flt-label">📄 แบบฟอร์ม 35 ปีขึ้นไป (210×350)</span>
           <select id="f35-scope" onfocus="fillForm35Scope()"><option value="all">ทั้งตำบล</option></select>
           <button type="button" class="btn-small btn-scr" onclick="exportForm35('admin')">📥 ดาวน์โหลด</button>
           <small style="color:var(--text-muted);">ใช้ปีงบที่เลือกด้านบน • อายุ 35 ปีขึ้นไปทุกคน</small>
@@ -688,7 +689,7 @@
           </select>
           <span id="vf-flt-count" class="flt-count"></span>
           <button type="button" class="btn-success btn-small" onclick="exportFilteredResidents('vhv')">📥 Excel ตามตัวกรอง</button>
-          <button type="button" class="btn-small btn-scr" onclick="exportForm35('vhv')">📥 แบบฟอร์ม 35 ปีขึ้นไป (F4)</button>
+          <button type="button" class="btn-small btn-scr" onclick="exportForm35('vhv')">📥 แบบฟอร์ม 35 ปีขึ้นไป (210×350)</button>
         </div>
         </details>
 
@@ -763,13 +764,14 @@
     <h3 style="border-bottom:1px solid #eee; padding-bottom:10px; margin-top:0;">🔑 เปลี่ยนรหัสผ่าน</h3>
     <p id="pass-who" style="color:var(--text-muted); font-size:14px; margin-top:0;"></p>
     <p id="pass-note" style="color:var(--text-muted); font-size:13px; margin-top:-8px;"></p>
+    <p id="pass-force-note" class="hidden" style="background:#fff3cd; color:#7a5a00; border-radius:8px; padding:10px 12px; font-size:14px; font-weight:600;">🔐 เพื่อความปลอดภัย กรุณาตั้งรหัสผ่านใหม่ของคุณเองก่อนใช้งาน</p>
     <form onsubmit="saveNewPassword(event)" style="margin-top:15px;">
       <div class="form-group"><label>รหัสผ่านปัจจุบัน *</label><input type="password" id="current-password" required autocomplete="current-password"></div>
       <div class="form-group"><label>รหัสใหม่ (อย่างน้อย 6 ตัวอักษร) *</label><input type="password" id="new-password" required minlength="6" autocomplete="new-password"></div>
       <div class="form-group"><label>ยืนยันรหัสใหม่ *</label><input type="password" id="confirm-password" required minlength="6" autocomplete="new-password"></div>
       <div id="pass-error" style="color:var(--danger); font-size:14px; font-weight:600; min-height:20px;"></div>
       <div style="text-align:right; margin-top:15px;">
-        <button type="button" class="btn-outline" onclick="closeChangePassModal()" style="margin-right:10px;">ยกเลิก</button>
+        <button type="button" id="pass-cancel" class="btn-outline" onclick="closeChangePassModal()" style="margin-right:10px;">ยกเลิก</button>
         <button type="submit" class="btn-warn">บันทึก</button>
       </div>
     </form>
@@ -1003,11 +1005,37 @@
   }
 
   /* ========== fetch with timeout ========== */
-  function fetchWithTimeout(url, options, timeoutMs) {
-    return Promise.race([
+  /* ========== บัตรผ่าน (token) — ได้จากเซิร์ฟเวอร์ตอน login แนบไปกับทุกคำสั่ง ========== */
+  const AUTH_KEY = 'vhv_auth_v1';
+  let AUTH = null;   // { token, role, id, name }
+  try { AUTH = JSON.parse(sessionStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { AUTH = null; }
+  function setAuth(a) { AUTH = a; try { if (a) sessionStorage.setItem(AUTH_KEY, JSON.stringify(a)); else sessionStorage.removeItem(AUTH_KEY); } catch (e) {} }
+  let authLostShown = false;
+  function onAuthLost() {
+    if (authLostShown) return; authLostShown = true;
+    const keep = AUTH ? { role: AUTH.role, id: AUTH.id } : null;
+    setAuth(null);
+    document.getElementById('app-section').classList.add('hidden');
+    document.getElementById('login-section').classList.remove('hidden');
+    if (keep) { document.getElementById('login-role').value = keep.role; document.getElementById('login-id').value = keep.role === 'admin' ? 'admin' : keep.id; }
+    document.getElementById('login-pass').value = '';
+    const n = getQueue().length;
+    const msg = document.getElementById('login-msg');
+    if (msg) { msg.textContent = '⏰ หมดเวลาการเข้าสู่ระบบ — กรุณาใส่รหัสผ่านอีกครั้ง' + (n ? ` (มีข้อมูลรอส่ง ${n} รายการ ไม่หาย)` : ''); msg.classList.remove('hidden'); }
+    setTimeout(() => { const el = document.getElementById('login-pass'); if (el) el.focus(); }, 100);
+  }
+  async function fetchWithTimeout(url, options, timeoutMs) {
+    if (url === GAS_URL && options && typeof options.body === 'string') {
+      try { const b = JSON.parse(options.body); if (b && b.action !== 'login' && AUTH && AUTH.token) { b._token = AUTH.token; options = Object.assign({}, options, { body: JSON.stringify(b) }); } } catch (e) {}
+    }
+    const res = await Promise.race([
       fetch(url, options),
       new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs || 15000))
     ]);
+    if (url !== GAS_URL) return res;
+    const txt = await res.text();
+    try { const j = JSON.parse(txt); if (j && j.status === 'auth') onAuthLost(); } catch (e) {}
+    return new Response(txt, { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
   function getSafariHelpMessage() {
     const ua = navigator.userAgent;
@@ -1038,14 +1066,21 @@
   }
   async function flushQueue() {
     const q = getQueue();
-    if (!q.length || !navigator.onLine) return;
+    if (!q.length || !navigator.onLine || !AUTH) return;
     showLoader();
-    const remain = [];
+    const remain = [], denied = []; let stop = false;
     for (const item of q) {
-      try { const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(item.data) }, 15000); const res = await r.json(); if (res.status !== 'success') remain.push(item); }
-      catch (e) { remain.push(item); break; }
+      if (stop) { remain.push(item); continue; }
+      try {
+        const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(item.data) }, 15000); const res = await r.json();
+        if (res.status === 'auth') { remain.push(item); stop = true; }                       // ต้อง login ใหม่ — เก็บไว้ส่งทีหลัง
+        else if (res.status === 'denied') denied.push(res.message || item.data.action);        // ไม่มีสิทธิ์ — ทิ้งรายการนี้
+        else if (res.status !== 'success') remain.push(item);
+      }
+      catch (e) { remain.push(item); stop = true; }
     }
     setQueue(remain); hideLoader();
+    if (denied.length) alert('⚠️ บางรายการส่งไม่ได้ (ไม่มีสิทธิ์):\n• ' + [...new Set(denied)].join('\n• '));
     if (remain.length === 0) toast('✅ ซิงค์ข้อมูลเรียบร้อย', 'ok');
     else toast(`เหลือ ${remain.length} รายการรอซิงค์`, 'warn');
   }
@@ -1072,34 +1107,48 @@
       return;
     }
 
-    showLoader();
-    fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'get_data' }) }, 15000)
-      .then(r => r.json())
-      .then(res => {
-        hideLoader();
-        if (res.status === 'success') {
-          dbVHV = normalizeRows(res.vhvs);
-          dbResidents = normalizeRows(res.residents);
-          dbVisits = normalizeRows(res.visits);
-          dbLarval = normalizeRows(res.larvals || []);
-          applySettings(res.settings || {});
-          loadScreenings();
-          document.getElementById('data-status').innerHTML = `<span style="color:green;">✅ โหลดแล้ว (อสม. ${dbVHV.length}, ลูกบ้าน ${dbResidents.length})</span>`;
-        } else {
-          document.getElementById('data-status').innerHTML = `<span style="color:red;">❌ ${res.message || 'โหลดไม่สำเร็จ'}</span>`;
-          toast('โหลดข้อมูลไม่สำเร็จ: ' + (res.message || ''), 'err');
-        }
-        updateSyncBadge();
-        if (getQueue().length) flushQueue();
-      })
-      .catch(e => {
-        hideLoader();
-        document.getElementById('data-status').innerHTML = '<span style="color:orange;">⚠️ ออฟไลน์หรือเชื่อมต่อไม่ได้</span>';
-        toast('📶 ออฟไลน์ — ใช้ข้อมูลในเครื่อง', 'warn');
-        applySettings({});
-        updateSyncBadge();
-      });
+    applySettings({});
+    document.getElementById('data-status').textContent = 'โหลดหลังเข้าสู่ระบบ';
+    // เปิดหน้าใหม่ในแท็บเดิม (ยังมีบัตรผ่าน) → เข้าใช้งานต่อได้เลย
+    if (AUTH && AUTH.token && navigator.onLine) {
+      loadAllData().then(ok => { if (ok) loginSuccess(AUTH.role, AUTH.name, AUTH.role === 'vhv' ? AUTH.id : null); });
+    }
   };
+
+  // โหลดข้อมูลหลังเข้าสู่ระบบ (เซิร์ฟเวอร์ส่งมาเฉพาะข้อมูลที่ผู้ใช้คนนี้มีสิทธิ์เห็น)
+  async function loadAllData() {
+    showLoader();
+    try {
+      const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'get_data' }) }, 20000);
+      const res = await r.json();
+      hideLoader();
+      if (res.status === 'must_change') {                 // ต้องตั้งรหัสใหม่ก่อน แล้วค่อยโหลดข้อมูล
+        currentUser = { role: AUTH.role, name: AUTH.name, id: AUTH.role === 'vhv' ? AUTH.id : null };
+        pendingAfterPass = async () => { if (await loadAllData()) loginSuccess(AUTH.role, AUTH.name, AUTH.role === 'vhv' ? AUTH.id : null); };
+        openChangePassModal(true, lastLoginPass);
+        return false;
+      }
+      if (res.status !== 'success') {
+        if (res.status !== 'auth') { document.getElementById('data-status').innerHTML = `<span style="color:red;">❌ ${esc(res.message || 'โหลดไม่สำเร็จ')}</span>`; toast('โหลดข้อมูลไม่สำเร็จ: ' + (res.message || ''), 'err'); }
+        return false;
+      }
+      dbVHV = normalizeRows(res.vhvs);
+      dbResidents = normalizeRows(res.residents);
+      dbVisits = normalizeRows(res.visits);
+      dbLarval = normalizeRows(res.larvals || []);
+      applySettings(res.settings || {});
+      loadScreenings();
+      document.getElementById('data-status').innerHTML = `<span style="color:green;">✅ โหลดแล้ว (ลูกบ้าน ${dbResidents.length})</span>`;
+      updateSyncBadge();
+      if (getQueue().length) flushQueue();
+      return true;
+    } catch (e) {
+      hideLoader();
+      document.getElementById('data-status').innerHTML = '<span style="color:orange;">⚠️ เชื่อมต่อไม่ได้</span>';
+      toast('📶 เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ลองใหม่อีกครั้ง', 'warn');
+      return false;
+    }
+  }
 
   function sendDataToGoogleSheets(data, successMessage, formId, callback) {
     if (currentUser && !data._actor) data._actor = { id: currentUser.id, name: currentUser.name, role: currentUser.role };
@@ -1110,6 +1159,9 @@
       .then(res => {
         hideLoader();
         if (res.status === 'success') { if (successMessage) toast(successMessage, 'ok'); if (callback) callback(data); }
+        else if (res.status === 'denied') { alert('⛔ ' + (res.message || 'ไม่มีสิทธิ์ทำรายการนี้')); }
+        else if (res.status === 'auth') { enqueue(data); if (callback) callback(data); }
+        else if (res.status === 'error' && res.message && !/Exception|Error:/i.test(res.message)) { alert('⚠️ ' + res.message); }
         else { enqueue(data); if (callback) callback(data); toast('เซิร์ฟเวอร์ผิดพลาด: บันทึกไว้ในเครื่อง', 'warn'); }
       })
       .catch(e => { hideLoader(); enqueue(data); if (callback) callback(data); toast('📶 เชื่อมต่อล้มเหลว: บันทึกไว้ในเครื่อง', 'warn'); });
@@ -1168,40 +1220,31 @@
   async function handleLogin() {
     const role = document.getElementById('login-role').value;
     const id = document.getElementById('login-id').value.trim();
-    const pass = document.getElementById('login-pass').value.trim();
+    const pass = document.getElementById('login-pass').value;
     if (!id || !pass) return alert('กรุณากรอกข้อมูลให้ครบ');
-
-    if (role === 'admin') {
-      if (id !== 'admin') return alert('ชื่อผู้ใช้ admin ไม่ถูกต้อง');
-      const r = await verifyAdminOnServer(pass);
-      if (!r.success) return alert(r.message || 'รหัสผ่านไม่ถูกต้อง');
-      loginSuccess('admin', 'คุณหมอ (Admin)');
-      if (r.is_default) setTimeout(() => toast('⚠️ ยังใช้รหัสเริ่มต้น — ควรเปลี่ยนทันที', 'warn'), 600);
-    } else if (role === 'vhv') {
-      if (!navigator.onLine) return alert('📶 กรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเข้าสู่ระบบ' + getSafariHelpMessage());
-      if (dbVHV.length === 0) return alert('❌ ยังไม่มีข้อมูล อสม. ในระบบ\n\nกรุณา login เป็น admin ก่อน\nแล้วไปที่ "👥 จัดการ อสม." เพื่อเพิ่ม อสม. คนแรก');
-      const byId = dbVHV.filter(u => String(u.vhv_id).trim() === String(id).trim());
-      if (byId.length === 0) { const ids = dbVHV.map(u => u.vhv_id).join(', '); return alert(`❌ ไม่พบรหัส อสม. "${id}"\n\nรหัสที่มีในระบบ: ${ids}`); }
-      const user = byId.find(u => String(u.pass).trim() === String(pass).trim());
-      if (user) loginSuccess('vhv', user.name, user.vhv_id);
-      else { const cp = byId[0].pass; alert(`❌ รหัสผ่านไม่ถูกต้อง\n\nกรอก: "${pass}" (${pass.length} ตัว)\nในระบบ: "${cp}" (${cp.length} ตัว)`); }
-    } else alert('ข้อมูลไม่ถูกต้อง');
-  }
-
-  async function verifyAdminOnServer(pass) {
-    if (!navigator.onLine) return { success: false, message: '📶 ต้องต่ออินเทอร์เน็ตเพื่อเข้าสู่ระบบผู้ดูแล' };
+    if (!navigator.onLine) return alert('📶 กรุณาเชื่อมต่ออินเทอร์เน็ตก่อนเข้าสู่ระบบ' + getSafariHelpMessage());
+    let res;
     try {
       showLoader();
-      const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'verify_admin', pass: pass }) }, 15000);
-      const data = await r.json();
-      hideLoader();
-      if (data.status === 'success') return { success: true, is_default: !!data.is_default };
-      return { success: false, message: data.message || 'รหัสผ่านไม่ถูกต้อง' };
+      const r = await fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'login', role: role, id: id, pass: pass }) }, 20000);
+      res = await r.json();
     } catch (e) {
-      hideLoader(); console.error('Login error:', e);
-      if (e.message === 'TIMEOUT') return { success: false, message: '⏱️ การเชื่อมต่อใช้เวลานานเกิน 15 วินาที กรุณาลองใหม่' + getSafariHelpMessage() };
-      return { success: false, message: 'การเชื่อมต่อล้มเหลว: ' + (e.message || 'ไม่ทราบสาเหตุ') + getSafariHelpMessage() };
+      hideLoader();
+      return alert(e.message === 'TIMEOUT' ? '⏱️ เชื่อมต่อนานเกินไป กรุณาลองใหม่' + getSafariHelpMessage() : 'การเชื่อมต่อล้มเหลว' + getSafariHelpMessage());
     }
+    hideLoader();
+    if (res.status !== 'success') return alert('❌ ' + (res.message || 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'));
+    document.getElementById('login-pass').value = '';
+    const msg = document.getElementById('login-msg'); if (msg) msg.classList.add('hidden');
+    authLostShown = false;
+    setAuth({ token: res.token, role: res.user.role, id: res.user.id, name: res.user.name });
+    const wasInApp = !!currentUser;
+    lastLoginPass = pass;
+    const ok = await loadAllData();
+    lastLoginPass = '';
+    if (!ok) return;
+    loginSuccess(res.user.role, res.user.name, res.user.role === 'vhv' ? res.user.id : null);
+    if (wasInApp) toast('✅ เข้าสู่ระบบอีกครั้งแล้ว', 'ok');
   }
 
   function loginSuccess(role, name, vhv_id) {
@@ -1229,9 +1272,20 @@
     updateSyncBadge();
   }
 
-  function handleLogout() { location.reload(); }
+  function handleLogout() {
+    const n = getQueue().length;
+    if (n && !confirm(`⚠️ ยังมีข้อมูลรอส่ง ${n} รายการ\nถ้าออกจากระบบตอนนี้ ข้อมูลจะยังเก็บในเครื่องและส่งเมื่อเข้าสู่ระบบครั้งถัดไป\n\nออกจากระบบ?`)) return;
+    const t = AUTH && AUTH.token;
+    setAuth(null);
+    if (t && navigator.onLine) { try { fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'logout', _token: t }), keepalive: true }); } catch (e) {} }
+    setTimeout(() => location.reload(), 150);
+  }
 
-  function openChangePassModal() {
+  let passForced = false, pendingAfterPass = null, lastLoginPass = '';
+  function openChangePassModal(forced, currentPass) {
+    passForced = forced === true;
+    document.getElementById('pass-cancel').classList.toggle('hidden', passForced);
+    document.getElementById('pass-force-note').classList.toggle('hidden', !passForced);
     document.getElementById('current-password').value = '';
     document.getElementById('new-password').value = '';
     document.getElementById('confirm-password').value = '';
@@ -1239,11 +1293,15 @@
     const who = (currentUser && currentUser.role === 'admin') ? 'บัญชี: ผู้ดูแลระบบ (admin)' : 'บัญชี: ' + (currentUser ? currentUser.name : '');
     document.getElementById('pass-who').textContent = who;
     document.getElementById('pass-note').textContent = (currentUser && currentUser.role === 'admin') ? '🔐 ต้องออนไลน์ — รหัสเก็บที่เซิร์ฟเวอร์' : '';
+    if (passForced && currentPass) document.getElementById('current-password').value = currentPass;
     document.getElementById('password-modal').classList.remove('hidden');
   }
 
-  function closeChangePassModal() {
+  function closeChangePassModal(done) {
+    if (passForced && done !== true) return;   // บังคับเปลี่ยนรหัส — ปิดไม่ได้จนกว่าจะเปลี่ยนสำเร็จ
+    passForced = false;
     document.getElementById('password-modal').classList.add('hidden');
+    if (done === true && pendingAfterPass) { const f = pendingAfterPass; pendingAfterPass = null; setTimeout(f, 50); }
     document.getElementById('current-password').value = '';
     document.getElementById('new-password').value = '';
     document.getElementById('confirm-password').value = '';
@@ -1272,15 +1330,21 @@
       .then(r => r.json())
       .then(data => {
         hideLoader();
-        if (data.status === 'success') { toast('🔐 เปลี่ยนรหัส admin แล้ว', 'ok'); closeChangePassModal(); }
+        if (data.status === 'success') { toast('🔐 เปลี่ยนรหัส admin แล้ว', 'ok'); closeChangePassModal(true); }
         else errBox.textContent = data.message || 'เปลี่ยนไม่สำเร็จ';
       })
       .catch(e => { hideLoader(); errBox.textContent = 'การเชื่อมต่อล้มเหลว'; });
     } else {
-      const me = dbVHV.find(u => u.vhv_id === currentUser.id);
-      if (!me) { errBox.textContent = 'ไม่พบบัญชี'; return; }
-      if (currentPass !== me.pass) { errBox.textContent = 'รหัสปัจจุบันไม่ถูกต้อง'; return; }
-      sendDataToGoogleSheets({ action: 'change_password', vhv_id: currentUser.id, new_pass: newPass }, 'เปลี่ยนรหัสแล้ว!', null, () => { me.pass = newPass; closeChangePassModal(); });
+      if (!navigator.onLine) { errBox.textContent = 'ต้องต่ออินเทอร์เน็ต'; return; }
+      showLoader();
+      fetchWithTimeout(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'change_password', old_pass: currentPass, new_pass: newPass }) }, 20000)
+        .then(r => r.json())
+        .then(data => {
+          hideLoader();
+          if (data.status === 'success') { toast('🔐 เปลี่ยนรหัสแล้ว', 'ok'); closeChangePassModal(true); }
+          else errBox.textContent = data.message || 'เปลี่ยนไม่สำเร็จ';
+        })
+        .catch(() => { hideLoader(); errBox.textContent = 'การเชื่อมต่อล้มเหลว'; });
     }
   }
 
@@ -1580,13 +1644,16 @@
   function clearVHVForm() { document.getElementById('vhv-form').reset(); document.getElementById('vhv-id').readOnly = false; }
   function saveVHV(e) {
     e.preventDefault();
-    const d = { action: 'save_vhv', vhv_id: document.getElementById('vhv-id').value, pass: document.getElementById('vhv-pass').value, name: document.getElementById('vhv-name').value, moo: document.getElementById('vhv-moo').value };
-    sendDataToGoogleSheets(d, 'บันทึกแล้ว', null, (x) => { const i = dbVHV.findIndex(v => v.vhv_id === x.vhv_id); if (i >= 0) dbVHV[i] = x; else dbVHV.push(x); clearVHVForm(); renderAdminVHV(); });
+    const d = { action: 'save_vhv', vhv_id: document.getElementById('vhv-id').value.trim(), pass: document.getElementById('vhv-pass').value.trim(), name: document.getElementById('vhv-name').value, moo: document.getElementById('vhv-moo').value };
+    const isNew = !dbVHV.some(v => v.vhv_id === d.vhv_id);
+    if (isNew && !d.pass) { alert('อสม. ใหม่ต้องตั้งรหัสผ่านเริ่มต้น'); return; }
+    if (!navigator.onLine) { alert('📶 ต้องต่ออินเทอร์เน็ตเพื่อจัดการบัญชี อสม.'); return; }
+    sendDataToGoogleSheets(d, d.pass ? 'บันทึกแล้ว — อสม. ต้องเปลี่ยนรหัสตอนเข้าใช้ครั้งแรก' : 'บันทึกแล้ว', null, (x) => { const rec = { vhv_id: x.vhv_id, name: x.name, moo: x.moo }; const i = dbVHV.findIndex(v => v.vhv_id === x.vhv_id); if (i >= 0) dbVHV[i] = rec; else dbVHV.push(rec); clearVHVForm(); renderAdminVHV(); });
   }
   function editVHV(id) {
     const u = dbVHV.find(v => v.vhv_id === id); if (!u) return;
     document.getElementById('vhv-id').value = u.vhv_id; document.getElementById('vhv-id').readOnly = true;
-    document.getElementById('vhv-pass').value = u.pass; document.getElementById('vhv-name').value = u.name; document.getElementById('vhv-moo').value = u.moo;
+    document.getElementById('vhv-pass').value = ''; document.getElementById('vhv-name').value = u.name; document.getElementById('vhv-moo').value = u.moo;
     window.scrollTo(0, 0);
   }
   function deleteVHV(id) {
@@ -3642,8 +3709,19 @@ ${pagesHtml}
         }
         row.commit && row.commit();
       }
-      // กระดาษ F4 (Excel = Folio 8.5×13 นิ้ว ≈ 216×330 มม.) แนวนอน • 20 คนต่อแผ่น • ตารางอยู่กึ่งกลางกระดาษ • ขอบ ≈8 มม. ทุกด้าน
+      // กระดาษ 210×350 มม. แนวนอน (ถ้าเครื่องพิมพ์/Excel ไม่รองรับ จะใช้ F4 216×330 แทน) • 20 คนต่อแผ่น • กึ่งกลาง • ขอบ ≈8 มม.
       for (let k = 1; k < pages; k++) ws.getRow(dataStart + k * PER_PAGE - 1).addPageBreak();
+      // ขยายความกว้างคอลัมน์ให้ตารางเต็มกระดาษที่ยาวขึ้น (สัดส่วนพื้นที่พิมพ์ ≈ 334×194 มม.)
+      {
+        const colPx = c => { const w = ws.getColumn(c).width; return (w == null ? 8.43 : w) * 7 + 5; };
+        const rowPx = r => ((ws.getRow(r).height || 15) * 96 / 72);
+        let tW = 0; for (let c = 1; c <= ws.columnCount; c++) tW += colPx(c);
+        let tH = 0; for (let r = 1; r < dataStart; r++) tH += rowPx(r);
+        for (let r = dataStart; r < dataStart + PER_PAGE; r++) tH += rowPx(r);
+        const want = (350 - 16.3) / (210 - 16.3);
+        const f = want * tH / tW;
+        if (f > 1.01 && f < 1.6) for (let c = 1; c <= ws.columnCount; c++) { const col = ws.getColumn(c); col.width = +(((col.width == null ? 8.43 : col.width)) * f).toFixed(2); }
+      }
       ws.pageSetup.paperSize = 14;
       ws.pageSetup.orientation = 'landscape';
       ws.pageSetup.fitToPage = true; ws.pageSetup.fitToWidth = 1; ws.pageSetup.fitToHeight = pages;
@@ -3651,7 +3729,19 @@ ${pagesHtml}
       ws.pageSetup.margins = { left: 0.32, right: 0.32, top: 0.32, bottom: 0.32, header: 0.1, footer: 0.1 };
       ws.pageSetup.printArea = `A1:${ws.getColumn(ws.columnCount).letter}${lastRow}`;
       if (!ws.pageSetup.printTitlesRow && headRows.length) ws.pageSetup.printTitlesRow = `${headRows[0]}:${headRows[headRows.length - 1]}`;
-      const out = await wb.xlsx.writeBuffer();
+      let out = await wb.xlsx.writeBuffer();
+      // ใส่ขนาดกระดาษกำหนดเอง 210×350 มม. (ExcelJS ตั้งเองไม่ได้ จึงแก้ใน XML ของไฟล์)
+      try {
+        await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+        const zip = await JSZip.loadAsync(out);
+        const names = Object.keys(zip.files).filter(n => /^xl\/worksheets\/sheet\d+\.xml$/.test(n));
+        for (const n of names) {
+          let x = await zip.file(n).async('string');
+          x = x.replace(/<pageSetup\b([^>]*?)(\/?)>/, (m, attrs, sl) => '<pageSetup' + attrs.replace(/\s(paperHeight|paperWidth)="[^"]*"/g, '') + ' paperHeight="350mm" paperWidth="210mm"' + sl + '>');
+          zip.file(n, x);
+        }
+        out = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
+      } catch (e) { console.warn('custom paper size skipped', e); }   // ถ้าไม่สำเร็จ ยังได้ไฟล์ขนาด F4 ตามเดิม
       const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
       a.download = `${FORM35_FILE_TITLE} ${who} ปีงบ${fy} ${stampTH()}.xlsx`.replace(/[\\/:*?"<>|]/g, '');
